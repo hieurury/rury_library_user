@@ -12,6 +12,8 @@ import HomeView                 from '../views/HomeView.vue'
 import LoginView                from '../views/LoginView.vue'
 import RegisterView             from '../views/RegisterView.vue'
 import ProfileView              from "../views/ProfileView.vue";
+import TestAIView               from "../views/TestAIView.vue";
+import BookDetail               from "../views/BookDetail.vue";
 
 //auth
 import {
@@ -63,6 +65,30 @@ const router = [
                 component: ProfileView
             }
         ]
+    },
+    {
+        path: '/books',
+        name: 'Book',
+        component: NoneLayout,
+        children: [
+            {
+                path: ':id',
+                name: 'BookDetail',
+                component: BookDetail
+            }
+        ]
+    },
+    {
+        path: '/test',
+        name: 'Test',
+        component: NoneLayout,
+        children: [
+            {
+                path: 'ai',
+                name: 'TestAI',
+                component: TestAIView
+            }
+        ]
     }
 ]
 
@@ -73,7 +99,7 @@ const routes = createRouter({
 })
 
 routes.beforeEach((to, from, next) => {
-    const publicPages = ['/', '/auth/login', '/auth/register', '/test/login'];
+    const publicPages = ['/', '/auth/login', '/auth/register'];
     const authRequired = !publicPages.includes(to.path);
     const loggedIn = getAccountData() !== null;
 

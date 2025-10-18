@@ -15,6 +15,8 @@ import {
     NDivider,
     NCard,
     NQrCode,
+    NDataTable,
+    NButton,
 }                               from    'naive-ui';
 import {
     getAccountData
@@ -25,7 +27,8 @@ import {
 import {
     ref,
     onMounted,
-    computed
+    computed,
+    h
 }                               from    'vue';
 import {
     useRouter
@@ -47,6 +50,55 @@ onMounted(async () => {
     }
     console.log(userInfo.value);
 })
+
+//==========> Liên quan đến bảng dữ liệu
+function createColumns({
+  play
+}) {
+  return [
+    {
+      title: "Số thứ tự",
+      key: "no"
+    },
+    {
+      title: "Tiêu đề sách",
+      key: "title"
+    },
+    {
+      title: "Thời gian mượn",
+      key: "borrowedTime"
+    },
+    {
+      title: "Chi tiết sách",
+      key: "actions",
+      render(row) {
+        return h(
+          NButton,
+          {
+            strong: true,
+            tertiary: true,
+            size: "small",
+            onClick: () => play(row)
+          },
+          { default: () => "Play" }
+        );
+      }
+    }
+  ];
+}
+
+const data = [
+  { no: 3, title: "Wonderwall", borrowedTime: "4:18" },
+  { no: 4, title: "Don't Look Back in Anger", borrowedTime: "4:48" },
+  { no: 12, title: "Champagne Supernova", borrowedTime: "7:27" }
+];
+const columns = createColumns({
+  play(row) {
+    message.info(`Play ${row.title}`);
+  }
+});
+const pagination = false;
+//<========== Liên quan đến bảng dữ liệu
 </script>
 
 
@@ -96,9 +148,21 @@ onMounted(async () => {
                         </NGrid>
                 </NSpace>
             </NSpace>
-            <NSpace class="mt-12"> 
-                
-            </NSpace>
+            <div class="mt-18 border border-gray-300/20 shadow-md p-4 rounded-md">
+                <NGrid cols="3">
+                    <NGi span="2">
+                        <h1 class="text-xl uppercase my-2">Tổng quát về sách đã mượn</h1>
+                        <n-data-table
+                        class="w-full"
+                            :columns="columns"
+                            :data="data"
+                            :pagination="pagination"
+                            :bordered="false"
+                        />
+                    </NGi>
+                    <NGi span="1"></NGi>
+                </NGrid>
+            </div>
         </NLayoutContent>
     </NLayout>
 </template>
