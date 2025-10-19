@@ -87,53 +87,53 @@ const sendRequest = async() => {
 
 <template>
     <div class="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 py-8 px-4 md:px-8">
-        <NSpace vertical justify="center" align="center" class="max-w-4xl mx-auto">
+        <NSpace vertical justify="center" align="center" class=" mx-auto">
             <!-- Header -->
-            <div class="text-center mb-8">
-                <h1 class="text-4xl md:text-5xl font-bold text-gray-800 dark:text-gray-100 mb-2">
+            <div class="text-center mb-6">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100 mb-1">
                     Thủ Thư AI
                 </h1>
-                <p class="text-lg text-gray-600 dark:text-gray-400">
-                    Hỏi đáp về sách và tìm kiếm các tác phẩm yêu thích của bạn
+                <p class="text-sm md:text-base text-gray-600 dark:text-gray-400">
+                    Hỏi đáp về sách và tìm kiếm các tác phẩm yêu thích
                 </p>
             </div>
 
             <!-- Chat Container -->
             <NCard class="w-full shadow-lg" :segmented="{ content: true, footer: 'soft' }">
                 <!-- Chat History -->
-                <div ref="chatHistoryRef" class="chat-history max-h-[600px] overflow-y-auto p-6 bg-white dark:bg-gray-800">
-                    <div v-if="history.length === 0" class="flex flex-col items-center justify-center h-64">
-                        <NAvatar round src="/logo.png" :size="80" class="mb-4" />
-                        <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-100 mb-2">
+                <div ref="chatHistoryRef" class="chat-history max-h-[500px] overflow-y-auto p-4 bg-white dark:bg-gray-800">
+                    <div v-if="history.length === 0" class="flex flex-col items-center justify-center h-56">
+                        <NAvatar round src="/logo.png" :size="70" class="mb-3" />
+                        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-1">
                             Xin chào, tôi là Thủ Thư AI
                         </h2>
-                        <p class="text-gray-600 dark:text-gray-400 text-center max-w-sm">
-                            Tôi sẵn sàng giúp bạn tìm kiếm sách, tìm hiểu về tác phẩm văn học và trả lời các câu hỏi về thư viện.
+                        <p class="text-sm text-gray-600 dark:text-gray-400 text-center max-w-xs">
+                            Hỏi tôi về sách, tác giả hoặc thư viện
                         </p>
                     </div>
 
-                    <div v-else class="space-y-4">
+                    <div v-else class="space-y-3">
                         <div v-for="(chat, index) in history" :key="index" class="chat-turn" :class="{'user-turn': chat.isUser, 'ai-turn': !chat.isUser}">
-                            <NSpace :align="chat.isUser ? 'flex-end' : 'flex-start'" :justify="chat.isUser ? 'flex-end' : 'flex-start'" class="mb-2">
+                            <NSpace :align="chat.isUser ? 'flex-end' : 'flex-start'" :justify="chat.isUser ? 'flex-end' : 'flex-start'" class="gap-2">
                                 <NAvatar 
                                     v-if="!chat.isUser"
                                     round
                                     src="/logo.png" 
-                                    :size="40" 
+                                    :size="36" 
                                     class="flex-shrink-0"
                                 />
                                 <div class="message-bubble" :class="{'user-message': chat.isUser, 'ai-message': !chat.isUser}">
                                     <NSpin v-if="loading && chat.message === '...'" size="small" />
-                                    <div v-else-if="chat.isUser" class="text-white">
+                                    <div v-else-if="chat.isUser" class="text-white text-sm">
                                         {{ chat.message }}
                                     </div>
-                                    <div v-else class="markdown-body" v-html="markdownRender(chat.message)"></div>
+                                    <div v-else class="markdown-body text-sm" v-html="markdownRender(chat.message)"></div>
                                 </div>
                                 <NAvatar 
                                     v-if="chat.isUser"
                                     round
                                     src="/users/default-avatar.svg" 
-                                    :size="40" 
+                                    :size="36" 
                                     class="flex-shrink-0"
                                 />
                             </NSpace>
@@ -143,11 +143,11 @@ const sendRequest = async() => {
 
                 <!-- Input Area -->
                 <template #footer>
-                    <NSpace vertical class="w-full gap-3">
+                    <NSpace vertical class="w-full gap-2">
                         <NInput 
                             v-model:value="userRequest" 
                             type="textarea" 
-                            :autosize="{ minRows: 2, maxRows: 4 }"
+                            :autosize="{ minRows: 2, maxRows: 3 }"
                             placeholder="Hỏi tôi bất cứ điều gì về sách..."
                             :disabled="loading"
                             @keyup.enter.prevent="sendRequest"
@@ -159,21 +159,21 @@ const sendRequest = async() => {
                             block 
                             :loading="loading" 
                             :disabled="loading || !userRequest.trim()"
-                            size="large"
+                            size="small"
                         >
                             <NIcon v-if="!loading"><i class="fa-solid fa-paper-plane"></i></NIcon>
-                            {{ loading ? 'Đang xử lý...' : 'Gửi' }}
+                            {{ loading ? 'Xử lý...' : 'Gửi' }}
                         </NButton>
                     </NSpace>
                 </template>
             </NCard>
 
             <!-- Info Alert -->
-            <NAlert type="info" closable class="w-full text-gray-700 dark:text-gray-300">
+            <NAlert type="info" closable class="w-full text-sm text-gray-700 dark:text-gray-300">
                 <template #icon>
                     <NIcon><i class="fa-solid fa-circle-info"></i></NIcon>
                 </template>
-                💡 Mẹo: Hãy hỏi tôi về thể loại sách, tác giả, hoặc những sách bạn đang tìm kiếm!
+                💡 Hỏi tôi về thể loại sách, tác giả hoặc những sách bạn tìm kiếm!
             </NAlert>
         </NSpace>
     </div>
@@ -230,10 +230,10 @@ const sendRequest = async() => {
 
 .message-bubble {
     max-width: 75%;
-    padding: 12px 18px;
+    padding: 10px 15px;
     border-radius: 18px;
     word-break: break-word;
-    line-height: 1.5;
+    line-height: 1.4;
 }
 
 .user-message {
@@ -256,12 +256,13 @@ const sendRequest = async() => {
 
 /* Markdown Content Styling */
 .markdown-body {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
 }
 
 .markdown-body :deep(p) {
-    margin: 0.5em 0;
-    line-height: 1.6;
+    margin: 0.3em 0;
+    line-height: 1.5;
 }
 
 .markdown-body :deep(p:first-child) {
@@ -273,10 +274,10 @@ const sendRequest = async() => {
 }
 
 .markdown-body :deep(h3) {
-    font-size: 1.3em;
+    font-size: 1.2em;
     font-weight: 600;
-    margin: 1em 0 0.5em 0;
-    padding-bottom: 0.3em;
+    margin: 0.8em 0 0.4em 0;
+    padding-bottom: 0.2em;
     border-bottom: 2px solid #e5e7eb;
 }
 
@@ -295,8 +296,8 @@ const sendRequest = async() => {
 
 .markdown-body :deep(blockquote) {
     border-left: 4px solid #3b82f6;
-    padding: 0.5em 0 0.5em 1em;
-    margin: 0.8em 0;
+    padding: 0.4em 0 0.4em 0.8em;
+    margin: 0.6em 0;
     background-color: #eff6ff;
     border-radius: 0 4px 4px 0;
     color: #1e40af;
@@ -309,21 +310,22 @@ const sendRequest = async() => {
 
 .markdown-body :deep(ul),
 .markdown-body :deep(ol) {
-    margin: 0.5em 0;
-    padding-left: 2em;
+    margin: 0.4em 0;
+    padding-left: 1.5em;
 }
 
 .markdown-body :deep(li) {
-    margin: 0.3em 0;
+    margin: 0.2em 0;
 }
 
 .markdown-body :deep(table) {
     width: 100%;
     border-collapse: collapse;
-    margin: 1em 0;
+    margin: 0.8em 0;
     border: 1px solid #e5e7eb;
     border-radius: 6px;
     overflow: hidden;
+    font-size: 0.9em;
 }
 
 :global(.dark) .markdown-body :deep(table) {
@@ -332,7 +334,7 @@ const sendRequest = async() => {
 
 .markdown-body :deep(th) {
     background-color: #f3f4f6;
-    padding: 12px;
+    padding: 8px 10px;
     text-align: left;
     font-weight: 600;
     border-bottom: 2px solid #e5e7eb;
@@ -344,7 +346,7 @@ const sendRequest = async() => {
 }
 
 .markdown-body :deep(td) {
-    padding: 10px 12px;
+    padding: 8px 10px;
     border-bottom: 1px solid #e5e7eb;
 }
 
@@ -386,10 +388,10 @@ const sendRequest = async() => {
 
 .markdown-body :deep(code) {
     background-color: #f3f4f6;
-    padding: 0.2em 0.4em;
+    padding: 0.15em 0.35em;
     border-radius: 3px;
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    font-size: 0.9em;
+    font-size: 0.85em;
 }
 
 :global(.dark) .markdown-body :deep(code) {
@@ -400,10 +402,11 @@ const sendRequest = async() => {
 .markdown-body :deep(pre) {
     background-color: #1f2937;
     color: #f3f4f6;
-    padding: 1em;
+    padding: 0.8em;
     border-radius: 6px;
     overflow-x: auto;
-    margin: 1em 0;
+    margin: 0.8em 0;
+    font-size: 0.85em;
 }
 
 .markdown-body :deep(pre code) {
