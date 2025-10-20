@@ -32,7 +32,8 @@ async function generate({
     message, 
     has_books = false, 
     has_categories = false,
-    borrow_data = false
+    borrow_data = false,
+    short_response = false
 }) {
     // if(!message) {
     //     messageNoti.error("Vui lòng nhập tin nhắn!");
@@ -74,6 +75,9 @@ async function generate({
         parts: [
             { text: message },
             {
+                text: `Cho biết ngày hiện tại là ${new Date().toLocaleDateString()}.`
+            },
+            {
                 text: `Hãy tuân thủ các quy tắc sau khi trả lời người dùng:
                 ${JSON.stringify(RESPONSE_RULES)}`
             },
@@ -96,7 +100,8 @@ async function generate({
             {
                 text: `Nếu người dùng mô tả về một loại sách mà họ không biết cụ thể **HÃY LÀM NHƯ SAU:**
                 ${JSON.stringify(SUPPORT_ANOTHER_BOOKS)}`
-            }
+            },
+            { text: short_response ? `**TRẢ LỜI NGẮN GỌN**.` : '' }
         ]
         }
     ],

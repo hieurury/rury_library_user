@@ -1,5 +1,8 @@
 import axios        from    "axios";
 const API_BASE      =       import.meta.env.VITE_API_BASE;
+import {
+    getToken
+}                   from    '../hooks/useAccount';
 
 //ĐĂNG KÝ TÀI KHOẢN NGƯỜI DÙNG MỚI
 const registerAccount = async (accountData) => {
@@ -13,7 +16,13 @@ const loginccount = async (accountData) => {
 }
 
 const getUserInfo = async (id) => {
-    const response = await axios.get(`${API_BASE}/user/get/${id}`);
+    const response = await axios.get(`${API_BASE}/user/get/${id}`, {
+        // xác thực token
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}`
+        }
+    });
     return response.data;
 }
 

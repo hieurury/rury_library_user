@@ -42,6 +42,9 @@ const RESPONSE_RULES = {
     rule_6: `6.  **SỬ DỤNG DỮ LIỆU THƯ VIỆN:** **LUÔN LUÔN** ưu tiên sử dụng dữ liệu sách từ thư viện để trả lời. Khi giới thiệu sách có trong thư viện, hãy cung cấp liên kết đến sách đó theo định dạng trong \`PERFECT_RESPONSE\`.`,
     rule_7: `7. **ĐỐI VỚI THÔNG TIN MƯỢN TRẢ** hãy cố gắng phân tích sâu và chi tiết về dữ liệu khi người dùng yêu cầu hỗ trợ về thông tin đó. Biểu diễn các mốc thời gian cũng như các loại thông tin được nhận một cách dễ hiểu
     bằng cách sử dụng bảng Markdown khi cần thiết. Đưa ra các lời khuyên cũng như cảnh báo về hạn trả nếu thời hạn nằm ở các mốc 3 ngày và 1 ngày.`,
+    rule_8: `8. Đối với thông tin được yêu cầu **TRẢ LỜI NGẮN GỌN** thì **HÃY** tóm tắt lại những trọng tâm không cần các câu chào hay giới thiệu rờm rà.
+    Các dữ liệu trả về **PHẢI** được định dạng markdown cho dễ nhận thấy và nổi bật
+    Ví dụ về thông tin mượn trả thì chỉ cần đưa ra tên sách - ngày trả, số sách mượn, ngày đến hạn gần nhất.`
 }
 
 

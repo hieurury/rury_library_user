@@ -17,10 +17,17 @@ import {
     NQrCode,
     NDataTable,
     NButton,
+    NIcon,
+    NScrollbar,
+    NResult,
 }                               from    'naive-ui';
 import {
     getAccountData
 }                               from    '../hooks/useAccount';
+import {
+    getBorrowWithUserId,
+    getBorrowInfo
+}                               from    '../services/apiBorrow';
 import {
     getUserInfo
 }                               from    '../services/apiUser'; 
@@ -33,23 +40,82 @@ import {
 import {
     useRouter
 }                               from    'vue-router'
+import AI                    from    '../hooks/useAI';
 import BookMarkControll         from    '../components/BookMarkControll.vue';
+import { marked }               from    'marked';
+import { all } from 'axios';
 
 // ==================== GLOBAL VARIABLES =======================//
 const API_BASE                  =       import.meta.env.VITE_API_BASE;
 const router                    =       useRouter();
+const AI_RESPONSE = ref('');
+const markdownRender = (value) => {
+    if (!value) return '';
+    return marked(value);
+}
+
+
 
 const userInfo                  =       ref(null);
+
 onMounted(async () => {
     const userData = getAccountData();
     if(!userData) {
         router.push('/auth/login');
-    } else {
+        return;
+    }
+    
+    try {
+        // Lấy thông tin user
         const rs = await getUserInfo(userData.MADOCGIA);
         userInfo.value = rs.data;
+
+        // Lấy tất cả thông tin mượn trả của user
+        const borrowsRes = await getBorrowWithUserId(userData.MADOCGIA);
+        allBorrows.value = borrowsRes.data || [];
+
+        // Lấy chi tiết từng sách mượn - sử dụng Promise.all để chờ tất cả
+        const details = [];
+        if (allBorrows.value.length > 0) {
+            const detailPromises = allBorrows.value.map(async (borrow, index) => {
+                try {
+                    const detail = await getBorrowInfo(borrow.MAPHIEU);
+                    return {
+                        no: index + 1,
+                        title: detail.data.SACH.TENSACH,
+                        borrowedTime: new Date(detail.data.NGAYMUON).toLocaleDateString(),
+                    };
+                } catch (error) {
+                    console.error(`Error fetching detail for ${borrow.MAPHIEU}:`, error);
+                    return null;
+                }
+            });
+            
+            const resolvedDetails = await Promise.all(detailPromises);
+            allBorrowsDetail.value = resolvedDetails.filter(d => d !== null);
+        }
+
+        // Nhận phản hồi mượn trả từ AI
+        AI_RESPONSE.value = await AI.generate({
+            message: `
+Đưa ra thông tin mượn sách của tôi một cách ngắn gọn kiểu sau:
+Số sách đã mượn: x
+TÊN SÁCH - HẠN TRẢ
+**CHÚ Ý** cảnh báo những sách còn 3 ngày đến hạn trả, nếu không có thì không cần cảnh báo gì cả.
+**HÃY KẺ BẢNG** để nhìn trực quan hơn`,
+            borrow_data: true,
+            short_response: true
+        });
+    } catch (error) {
+        console.error('Error in onMounted:', error);
     }
-    console.log(userInfo.value);
 })
+
+
+//==========> Liên quan đến dữ liệu mượn
+const allBorrows = ref([])
+const allBorrowsDetail = ref([]);
+//<========== Liên quan đến dữ liệu mượn
 
 //==========> Liên quan đến bảng dữ liệu
 function createColumns({
@@ -57,20 +123,23 @@ function createColumns({
 }) {
   return [
     {
-      title: "Số thứ tự",
-      key: "no"
+      title: "STT",
+      key: "no",
+      width: 50
     },
     {
       title: "Tiêu đề sách",
       key: "title"
     },
     {
-      title: "Thời gian mượn",
-      key: "borrowedTime"
+      title: "Ngày mượn",
+      key: "borrowedTime",
+      width: 120
     },
     {
-      title: "Chi tiết sách",
+      title: "Chi tiết",
       key: "actions",
+      width: 80,
       render(row) {
         return h(
           NButton,
@@ -80,18 +149,13 @@ function createColumns({
             size: "small",
             onClick: () => play(row)
           },
-          { default: () => "Play" }
+          { default: () => "Xem" }
         );
       }
     }
   ];
 }
 
-const data = [
-  { no: 3, title: "Wonderwall", borrowedTime: "4:18" },
-  { no: 4, title: "Don't Look Back in Anger", borrowedTime: "4:48" },
-  { no: 12, title: "Champagne Supernova", borrowedTime: "7:27" }
-];
 const columns = createColumns({
   play(row) {
     message.info(`Play ${row.title}`);
@@ -149,18 +213,39 @@ const pagination = false;
                 </NSpace>
             </NSpace>
             <div class="mt-18 border border-gray-300/20 shadow-md p-4 rounded-md">
-                <NGrid cols="3">
+                <NGrid cols="3" x-gap="12" y-gap="12">
                     <NGi span="2">
                         <h1 class="text-xl uppercase my-2">Tổng quát về sách đã mượn</h1>
                         <n-data-table
-                        class="w-full"
+                            class="w-full shadow-md"
                             :columns="columns"
-                            :data="data"
+                            :data="allBorrowsDetail"
                             :pagination="pagination"
                             :bordered="false"
                         />
                     </NGi>
-                    <NGi span="1"></NGi>
+                    <NGi span="1">
+                        <h1 class="text-xl uppercase my-2">Thủ thư Mọt sẽ giúp bạn tóm tắt</h1>
+                        <NCard class="bg-gradient-to-br rounded-lg shadow-md from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900" :bordered="false">
+                            <NScrollbar class="h-64">
+                                <div class="ai-response-container pr-3">
+                                    <div v-if="!AI_RESPONSE" class="flex items-center justify-center h-40 text-gray-400">
+                                        <NResult>
+                                            <template #icon>
+                                                <NSpace vertical align="center">
+                                                    <NIcon size="40"><i class="fa-solid fa-robot"></i></NIcon>
+                                                    <h3 class="animate-pulse">Chờ chút! Mọt sẽ giúp bạn thống kê...</h3>
+                                                </NSpace>
+                                            </template>
+                                        </NResult>
+                                    </div>
+                                    <div v-else class="ai-markdown text-sm leading-relaxed">
+                                        <div v-html="markdownRender(AI_RESPONSE)"></div>
+                                    </div>
+                                </div>
+                            </NScrollbar>
+                        </NCard>
+                    </NGi>
                 </NGrid>
             </div>
         </NLayoutContent>
@@ -169,5 +254,158 @@ const pagination = false;
 
 
 <style scoped>
+.ai-response-container {
+    padding: 1rem;
+}
 
+.ai-markdown {
+    margin: 0.4em 0;
+    line-height: 1.6;
+}
+
+.ai-markdown :deep(p:first-child) {
+    margin-top: 0;
+}
+
+.ai-markdown :deep(p:last-child) {
+    margin-bottom: 0;
+}
+
+.ai-markdown :deep(h3),
+.ai-markdown :deep(h4) {
+    font-size: 1.1em;
+    font-weight: 600;
+    margin: 0.6em 0 0.3em 0;
+    padding-bottom: 0.2em;
+    border-bottom: 2px solid #818cf8;
+    color: #4338ca;
+}
+
+:global(.dark) .ai-markdown :deep(h3),
+:global(.dark) .ai-markdown :deep(h4) {
+    color: #a5b4fc;
+    border-bottom-color: #6366f1;
+}
+
+.ai-markdown :deep(strong) {
+    font-weight: 600;
+    color: #3730a3;
+}
+
+:global(.dark) .ai-markdown :deep(strong) {
+    color: #c7d2fe;
+}
+
+.ai-markdown :deep(ul),
+.ai-markdown :deep(ol) {
+    margin: 0.4em 0;
+    padding-left: 1.5em;
+}
+
+.ai-markdown :deep(li) {
+    margin: 0.15em 0;
+    padding-left: 0.3em;
+}
+
+.ai-markdown :deep(blockquote) {
+    border-left: 3px solid #818cf8;
+    padding: 0.3em 0 0.3em 0.7em;
+    margin: 0.5em 0;
+    background-color: rgba(129, 140, 248, 0.1);
+    border-radius: 0 4px 4px 0;
+    color: #3730a3;
+    font-size: 0.95em;
+}
+
+:global(.dark) .ai-markdown :deep(blockquote) {
+    background-color: rgba(129, 140, 248, 0.15);
+    border-left-color: #6366f1;
+    color: #a5b4fc;
+}
+
+.ai-markdown :deep(code) {
+    background-color: rgba(129, 140, 248, 0.15);
+    padding: 0.15em 0.35em;
+    border-radius: 3px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.85em;
+    color: #3730a3;
+}
+
+:global(.dark) .ai-markdown :deep(code) {
+    background-color: rgba(99, 102, 241, 0.2);
+    color: #a5b4fc;
+}
+
+.ai-markdown :deep(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.6em 0;
+    border: 1px solid #e0e7ff;
+    border-radius: 4px;
+    overflow-x: scroll;
+    font-size: 0.9em;
+}
+
+:global(.dark) .ai-markdown :deep(table) {
+    border-color: #4c1d95;
+}
+
+.ai-markdown :deep(th) {
+    background-color: #eef2ff;
+    padding: 6px 10px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #818cf8;
+    color: #3730a3;
+}
+
+:global(.dark) .ai-markdown :deep(th) {
+    background-color: #3730a3;
+    border-bottom-color: #6366f1;
+    color: #e0e7ff;
+}
+
+.ai-markdown :deep(td) {
+    padding: 6px 10px;
+    border-bottom: 1px solid #e0e7ff;
+    max-width: 100px;
+    /* giới hạn */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+:global(.dark) .ai-markdown :deep(td) {
+    border-bottom-color: #4c1d95;
+}
+
+.ai-markdown :deep(tr:nth-child(even)) {
+    background-color: #f8fafc;
+    color: #3730a3;
+}
+
+:global(.dark) .ai-markdown :deep(tr:nth-child(even)) {
+    background-color: #2d1b69;
+}
+
+.ai-markdown :deep(a) {
+    color: #4338ca;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.ai-markdown :deep(a:hover) {
+    color: #2e1065;
+    text-decoration: underline;
+}
+
+:global(.dark) .ai-markdown :deep(a) {
+    color: #818cf8;
+}
+
+:global(.dark) .ai-markdown :deep(a:hover) {
+    color: #c7d2fe;
+}
 </style>

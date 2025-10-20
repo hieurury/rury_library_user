@@ -9,6 +9,22 @@ const setAccountData = (data) => {
     accountData.value = data;
 }
 
+
+
+const setToken = (token) => {
+    sessionStorage.setItem('token', token);
+}
+
+const getToken = () => {
+    return sessionStorage.getItem('token');
+}
+
+const removeToken = () => {
+    sessionStorage.removeItem('token');
+}
+
+
+
 const getAccountData = () => {
     return accountData.value;
 }
@@ -16,10 +32,13 @@ const getAccountData = () => {
 const removeAccountData = () => {
     accountData.value = null;
     sessionStorage.removeItem('accountData');
+    sessionStorage.removeItem('token');
 }
-
 export {
     setAccountData,
     getAccountData,
-    removeAccountData
+    removeAccountData,
+    setToken,
+    getToken,
+    removeToken
 }

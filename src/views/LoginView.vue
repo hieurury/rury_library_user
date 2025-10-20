@@ -25,7 +25,7 @@ import {
 }                               from    '../services/apiUser';
 import {
     setAccountData,
-    getAccountData
+    setToken
 }                               from    '../hooks/useAccount'
 import {
     useRouter
@@ -66,6 +66,7 @@ const submitForm                =       () => {
             message[response.status](response.message);
             if(response.status === 'success') {
                 setAccountData(response.data);
+                setToken(response.token);
                 router.push('/user/profile');
             }
         } else {
