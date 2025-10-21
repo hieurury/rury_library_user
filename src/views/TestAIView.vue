@@ -65,7 +65,7 @@ const sendRequest = async() => {
     scrollToBottom();
 
     try {
-        const response = await AI.generate({message: currentRequest, has_books: true, borrow_data: true});
+        const response = await AI.generate({message: currentRequest, has_books: true, borrow_data: true, lab_borrows: true});
         if(response) {
             console.log(response);
             history.value[aiMessageIndex].message = response;

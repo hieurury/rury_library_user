@@ -11,7 +11,8 @@ import {
 }                           from    "../services/apiBook";
 import {
     getBorrowWithUserId,
-    getBorrowInfo
+    getBorrowInfo,
+    getAllBorrowsInfo
 }                           from    "../services/apiBorrow";
 import {
     getAccountData
@@ -33,7 +34,8 @@ async function generate({
     has_books = false, 
     has_categories = false,
     borrow_data = false,
-    short_response = false
+    short_response = false,
+    lab_borrows = false
 }) {
     // if(!message) {
     //     messageNoti.error("Vui lòng nhập tin nhắn!");
@@ -50,7 +52,6 @@ async function generate({
     const borrowData = computed(async() => {
         if(borrow_data) {
             const account = getAccountData();
-            console.log(account);
             if(!account || !account.MADOCGIA) {
                 return null;
             }
@@ -60,8 +61,25 @@ async function generate({
                 const info = await getBorrowInfo(borrow.MAPHIEU);
                 return info;
             }));
-            console.log(detailedBorrows);
             return detailedBorrows;
+        } else {
+            return [];
+        }
+    });
+
+    const labBorrowsData = computed(async() => {
+        if(lab_borrows) {
+            //thông tin nhạy cảm, config lại
+            const allInfoBorrows = await getAllBorrowsInfo();
+            const configData = allInfoBorrows.data.map(borrow => {
+                return {
+                    MA_BANSAO: borrow.MA_BANSAO,
+                    NGAYMUON: borrow.NGAYMUON,
+                    NGAYTRA: borrow.NGAYTRA,
+                    TINHTRANG: borrow.TINHTRANG
+                }
+            });
+            return configData;
         } else {
             return [];
         }
@@ -100,6 +118,10 @@ async function generate({
             {
                 text: `Nếu người dùng mô tả về một loại sách mà họ không biết cụ thể **HÃY LÀM NHƯ SAU:**
                 ${JSON.stringify(SUPPORT_ANOTHER_BOOKS)}`
+            },
+            {
+                text: lab_borrows ? `Dưới đây là thông tin mượn trả của thư viện **TUYỆT ĐỐI** không cung cấp thông tin người dùng khác cho người dùng hiện tại:
+                ${JSON.stringify(await labBorrowsData.value)}` : 'Tôi không có quyền trích xuất dữ liệu về mượn trả của thư viện!'
             },
             { text: short_response ? `**TRẢ LỜI NGẮN GỌN**.` : '' }
         ]

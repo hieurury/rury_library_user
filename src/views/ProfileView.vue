@@ -12,6 +12,7 @@ import {
     NAvatar,
     NImage,
     NTag,
+    NP,
     NDivider,
     NCard,
     NQrCode,
@@ -80,11 +81,31 @@ onMounted(async () => {
             const detailPromises = allBorrows.value.map(async (borrow, index) => {
                 try {
                     const detail = await getBorrowInfo(borrow.MAPHIEU);
-                    return {
-                        no: index + 1,
-                        title: detail.data.SACH.TENSACH,
-                        borrowedTime: new Date(detail.data.NGAYMUON).toLocaleDateString(),
-                    };
+                    // Chỉ lấy sách đang mượn (chưa trả)
+                    if(detail.data.TINHTRANG === 'borrowing') {
+                        const borrowDate = new Date(detail.data.NGAYMUON);
+                        const returnDate = new Date(detail.data.NGAYHENTRA);
+                        const today = new Date();
+                        
+                        // Reset time để so sánh chỉ theo ngày
+                        today.setHours(0, 0, 0, 0);
+                        returnDate.setHours(0, 0, 0, 0);
+                        
+                        // Tính số ngày còn lại
+                        const daysRemaining = Math.ceil((returnDate - today) / (1000 * 60 * 60 * 24));
+                        const isOverdue = daysRemaining < 0;
+                        
+                        return {
+                            no: index + 1,
+                            title: detail.data.SACH.TENSACH,
+                            borrowedTime: borrowDate.toLocaleDateString('vi-VN'),
+                            returnDate: returnDate.toLocaleDateString('vi-VN'),
+                            daysRemaining: daysRemaining,
+                            isOverdue: isOverdue,
+                        };
+                    } else {
+                        return null;
+                    }
                 } catch (error) {
                     console.error(`Error fetching detail for ${borrow.MAPHIEU}:`, error);
                     return null;
@@ -92,7 +113,12 @@ onMounted(async () => {
             });
             
             const resolvedDetails = await Promise.all(detailPromises);
-            allBorrowsDetail.value = resolvedDetails.filter(d => d !== null);
+            // Lọc bỏ null và đánh số thứ tự lại
+            const filtered = resolvedDetails.filter(d => d !== null);
+            allBorrowsDetail.value = filtered.map((item, idx) => ({
+                ...item,
+                no: idx + 1
+            }));
         }
 
         // Nhận phản hồi mượn trả từ AI
@@ -125,7 +151,7 @@ function createColumns({
     {
       title: "STT",
       key: "no",
-      width: 50
+      width: 60
     },
     {
       title: "Tiêu đề sách",
@@ -134,7 +160,52 @@ function createColumns({
     {
       title: "Ngày mượn",
       key: "borrowedTime",
-      width: 120
+      width: 110
+    },
+    {
+      title: "Hạn trả",
+      key: "returnDate",
+      width: 110
+    },
+    {
+      title: "Trạng thái",
+      key: "status",
+      width: 120,
+      render(row) {
+        const { isOverdue, daysRemaining } = row;
+        
+        if (isOverdue) {
+          return h(
+            NTag,
+            {
+              type: "error",
+              size: "small",
+              bordered: false
+            },
+            { default: () => `Quá hạn ${Math.abs(daysRemaining)} ngày` }
+          );
+        } else if (daysRemaining <= 3) {
+          return h(
+            NTag,
+            {
+              type: "warning",
+              size: "small",
+              bordered: false
+            },
+            { default: () => `Còn ${daysRemaining} ngày` }
+          );
+        } else {
+          return h(
+            NTag,
+            {
+              type: "success",
+              size: "small",
+              bordered: false
+            },
+            { default: () => `Còn ${daysRemaining} ngày` }
+          );
+        }
+      }
     },
     {
       title: "Chi tiết",

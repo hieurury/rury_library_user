@@ -21,4 +21,14 @@ const getBorrowInfo = async (borrowId) => {
   }
 };
 
-export { getBorrowWithUserId, getBorrowInfo };
+const getAllBorrowsInfo = async () => {
+  try {
+    const response = await axios.get(`${API_BASE}/borrow/admin/all`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all borrows info:", error);
+    throw error;
+  }
+}
+
+export { getBorrowWithUserId, getBorrowInfo, getAllBorrowsInfo };
