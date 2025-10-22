@@ -29,6 +29,7 @@ const registerAccount = async (accountData) => {
 const loginccount = async (accountData) => {
     try {
         const url = `${API_BASE}/user/login`;
+        console.log(url);
         console.log('📤 Login URL:', url);
         const response = await axios.post(url, accountData);
         return response.data;
