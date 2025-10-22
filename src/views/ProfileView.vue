@@ -84,7 +84,7 @@ onMounted(async () => {
                     // Chỉ lấy sách đang mượn (chưa trả)
                     if(detail.data.TINHTRANG === 'borrowing') {
                         const borrowDate = new Date(detail.data.NGAYMUON);
-                        const returnDate = new Date(detail.data.NGAYHENTRA);
+                        const returnDate = new Date(detail.data.NGAYHANTRA);
                         const today = new Date();
                         
                         // Reset time để so sánh chỉ theo ngày
@@ -126,9 +126,11 @@ onMounted(async () => {
             message: `
 Đưa ra thông tin mượn sách của tôi một cách ngắn gọn kiểu sau:
 Số sách đã mượn: x
-TÊN SÁCH - HẠN TRẢ
-**CHÚ Ý** cảnh báo những sách còn 3 ngày đến hạn trả, nếu không có thì không cần cảnh báo gì cả.
-**HÃY KẺ BẢNG** để nhìn trực quan hơn`,
+**THỐNG KÊ** những cuốn sách còn còn 3 ngày nữa đến hạn trả (NẾU KHÔNG CÓ THÌ CHO BIẾT NGÀY TRẢ GẦN NHẤT).
+**CHO BIẾT** những cuốn sách quá hạn trả (NẾU KHÔNG CÓ THÌ BẢO RẰNG "Không có sách quá hạn").
+**HÃY** đưa ra kết quản trông gọn gàng và dễ hiểu và ngắn gọn.
+**NẾU CÓ THỂ** hãy đưa các thông tin dưới dạng bảng để dễ nhìn hơn. Phân tách từng loại thông tin ra một cách rõ ràng và dễ nhận biết.
+**HÃY DÙNG MARKDOWN** dùng những thứ như (>) hay (***) hay blockquote để mô tả thông tin chi tiết`,
             borrow_data: true,
             short_response: true
         });
@@ -184,16 +186,6 @@ function createColumns({
             },
             { default: () => `Quá hạn ${Math.abs(daysRemaining)} ngày` }
           );
-        } else if (daysRemaining <= 3) {
-          return h(
-            NTag,
-            {
-              type: "warning",
-              size: "small",
-              bordered: false
-            },
-            { default: () => `Còn ${daysRemaining} ngày` }
-          );
         } else {
           return h(
             NTag,
@@ -202,7 +194,7 @@ function createColumns({
               size: "small",
               bordered: false
             },
-            { default: () => `Còn ${daysRemaining} ngày` }
+            { default: () => `Còn hạn` }
           );
         }
       }

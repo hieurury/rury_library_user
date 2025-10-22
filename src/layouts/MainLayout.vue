@@ -5,61 +5,210 @@ import {
     NConfigProvider, 
     darkTheme,
     NGradientText,
-    NSwitch
+    NSwitch,
+    NButton,
+    NIcon,
+    NImage,
+    NDropdown,
+    useMessage
 }                               from    'naive-ui';
 import { 
     isDark, 
     toggleDark 
 }                               from    '../hooks/useDark';
+import {
+    getAccountData,
+    removeAccountData
+}                               from    '../hooks/useAccount';
+import { ref, computed, h } from 'vue';
+import { useRouter } from 'vue-router';
+
+const message = useMessage();
+const router = useRouter();
+
+// Check if user is logged in
+const accountData = ref(getAccountData());
+const isLoggedIn = computed(() => accountData.value !== null);
+
+// Function to render icon
+const renderIcon = (iconClass) => {
+  return () => h(NIcon, null, { default: () => h('i', { class: iconClass }) });
+};
+
+// User dropdown options
+const userDropdownOptions = [
+  {
+    label: 'Trang cá nhân',
+    key: 'profile',
+    icon: renderIcon('fa-solid fa-user')
+  },
+  {
+    label: 'Sách đã mượn',
+    key: 'borrowed',
+    icon: renderIcon('fa-solid fa-book')
+  },
+  {
+    type: 'divider',
+    key: 'd1'
+  },
+  {
+    label: 'Đăng xuất',
+    key: 'logout',
+    icon: renderIcon('fa-solid fa-right-from-bracket')
+  }
+];
+
+// Handle dropdown selection
+const handleDropdownSelect = (key) => {
+  if (key === 'profile') {
+    router.push('/user/profile');
+  } else if (key === 'borrowed') {
+    router.push('/user/profile');
+  } else if (key === 'logout') {
+    removeAccountData();
+    accountData.value = null;
+    message.success('Đăng xuất thành công');
+    router.push('/');
+  }
+};
 </script>
 
-
 <template>
-    <header>
-        <nav class="bg-gradient-to-r from-white to-slate-200 shadow 
-        dark:from-gray-800 dark:to-gray-900
-        lg:py-4 lg:text-lg lg:px-[10%]
-        text-gray-700">
+    <header class="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-sm">
+        <nav class="lg:py-4 py-3 lg:px-[10%] px-4">
             <NSpace justify="space-between" align="center">
-                <NSpace align="center">
+                <!-- Logo -->
+                <RouterLink to="/" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
                     <NAvatar
                         round
                         size="large"
                         src="/logo.png"
                     />
-                    <div class="flex items-center text-2xl">
-                        <NGradientText type="warning"
-                        >RuryLib</NGradientText>
-                    </div>
+                    <NGradientText 
+                        type="warning"
+                        class="text-2xl lg:text-3xl font-bold"
+                    >
+                        RuryLib
+                    </NGradientText>
+                </RouterLink>
+
+                <!-- Navigation Links - Desktop -->
+                <NSpace class="hidden lg:flex uppercase font-semibold dark:text-gray-300" size="large" align="center">
+                    <router-link 
+                        to="/" 
+                        class="px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        active-class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                    >
+                        <NIcon class="mr-1"><i class="fa-solid fa-home"></i></NIcon>
+                        Trang chủ
+                    </router-link>
+                    <router-link 
+                        to="/about" 
+                        class="px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        active-class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                    >
+                        <NIcon class="mr-1"><i class="fa-solid fa-list"></i></NIcon>
+                        Danh mục
+                    </router-link>
+                    <router-link 
+                        to="/user/profile" 
+                        class="px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        active-class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                    >
+                        <NIcon class="mr-1"><i class="fa-solid fa-user"></i></NIcon>
+                        Tài khoản
+                    </router-link>
                 </NSpace>
-                <NSpace>
-                    <NButton type="info">
-                        <RouterLink to="/auth/register">Đăng ký</RouterLink>
-                    </NButton>
-                </NSpace>
-                <NSpace class="uppercase font-semibold dark:text-gray-300" size="large" align="center">
-                    <router-link to="/">Trang chủ</router-link>
-                    <router-link to="/about">Danh mục</router-link>
-                    <NSwitch v-model:value="isDark">
-                        <template #icon> 
-                            <span v-if="isDark">
-                                <i class="fa-solid fa-sun"></i>
-                            </span>
-                            <span v-else>
-                                <i class="fa-solid fa-moon"></i>
-                            </span>
+
+                <!-- Right Side Actions -->
+                <NSpace align="center" :size="12">
+                    <!-- Dark Mode Toggle -->
+                    <NSwitch v-model:value="isDark" size="large">
+                        <template #checked-icon>
+                            <NIcon><i class="fa-solid fa-sun"></i></NIcon>
+                        </template>
+                        <template #unchecked-icon>
+                            <NIcon><i class="fa-solid fa-moon"></i></NIcon>
                         </template>
                     </NSwitch>
+
+                    <!-- User Dropdown if logged in -->
+                    <NDropdown 
+                        v-if="isLoggedIn"
+                        :options="userDropdownOptions" 
+                        @select="handleDropdownSelect"
+                        trigger="click"
+                    >
+                        <NButton type="primary" size="large" class="hidden lg:flex">
+                            <template #icon>
+                                <NIcon><i class="fa-solid fa-user"></i></NIcon>
+                            </template>
+                            {{ accountData?.TEN || 'Tài khoản' }}
+                            <template #icon-after>
+                                <NIcon><i class="fa-solid fa-chevron-down"></i></NIcon>
+                            </template>
+                        </NButton>
+                    </NDropdown>
+
+                    <!-- Auth Buttons if not logged in - Desktop -->
+                    <NSpace v-if="!isLoggedIn" class="hidden lg:flex" :size="12">
+                        <NButton type="info" size="large">
+                            <template #icon>
+                                <NIcon><i class="fa-solid fa-right-to-bracket"></i></NIcon>
+                            </template>
+                            <RouterLink to="/auth/login">Đăng nhập</RouterLink>
+                        </NButton>
+                        <NButton type="primary" size="large">
+                            <template #icon>
+                                <NIcon><i class="fa-solid fa-user-plus"></i></NIcon>
+                            </template>
+                            <RouterLink to="/auth/register">Đăng ký</RouterLink>
+                        </NButton>
+                    </NSpace>
+
+                    <!-- Mobile Menu Button -->
+                    <NButton 
+                        class="lg:hidden"
+                        circle
+                        size="large"
+                        @click="() => {}"
+                    >
+                        <template #icon>
+                            <NIcon><i class="fa-solid fa-bars"></i></NIcon>
+                        </template>
+                    </NButton>
                 </NSpace>
             </NSpace>
         </nav>
     </header>
-    <main>
+    
+    <main class="min-h-screen">
         <router-view />
     </main>
-    <footer></footer>
 </template>
 
 <style scoped>
+header {
+    border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+}
 
+:global(.dark) header {
+    border-bottom-color: rgba(75, 85, 99, 0.3);
+}
+
+/* Active link styling */
+.router-link-active {
+    font-weight: 600;
+}
+
+/* Smooth transitions */
+a {
+    transition: all 0.2s ease;
+}
+
+/* Remove default link styling */
+a {
+    text-decoration: none;
+    color: inherit;
+}
 </style>

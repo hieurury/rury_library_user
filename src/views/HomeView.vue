@@ -5,25 +5,185 @@ import {
     NButton,
     NIcon,
     NCard,
-    NList,
-    NListItem,
-    NAvatar,
+    NGrid,
+    NGi,
+    NTag,
     NEllipsis,
-    NRate
+    NInput,
+    NForm,
+    NFormItem,
+    NDivider,
+    NStatistic,
+    NImage,
+    useMessage
 }                       from 'naive-ui';
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import Search           from '../components/Search.vue';
 
-// Top books data for 4x2 grid
-const topBooks = [
-  { id: 1, title: 'Đắc Nhân Tâm', author: 'Dale Carnegie', cover: '/books/dac-nhan-tam.webp' },
-  { id: 2, title: 'Mắt biếc', author: 'Nguyễn Nhật Ánh', cover: '/books/mat-biec.jpg' },
-  { id: 3, title: 'Harry Potter', author: 'J.K. Rowling', cover: '/books/harryposter.webp' },
-  { id: 4, title: 'Tâm lý học', author: 'Nhiều tác giả', cover: '/books/tam-li-hoc.png' },
-  { id: 5, title: 'Truyện ngắn', author: 'Nhiều tác giả', cover: '/books/truyen-ngan.png' },
-  { id: 6, title: 'Truyện tranh', author: 'Nhiều tác giả', cover: '/books/truyen-tranh.png' },
-  { id: 7, title: 'Tâm lý học (bản webp)', author: 'Nhiều tác giả', cover: '/books/tam-li-hoc.webp' },
-  { id: 8, title: 'Tác phẩm nổi bật', author: 'Nhiều tác giả', cover: '/books/dac-nhan-tam.webp' },
+const router = useRouter();
+const message = useMessage();
+
+// Banner carousel data
+const banners = [
+  { id: 1, image: '/banner/banner1.png', title: 'Khám phá tri thức' },
+  { id: 2, image: '/banner/banner2.png', title: 'Thư viện số hiện đại' },
+  { id: 3, image: '/banner/banner3.png', title: 'Đọc sách mọi lúc mọi nơi' }
 ];
+
+// Top 3 categories with most borrows
+const topBorrowCategories = [
+  { id: 1, name: 'Tâm lý học', image: '/books/tam-li-hoc.png', borrowCount: 1250, icon: 'fa-brain' },
+  { id: 2, name: 'Truyện ngắn', image: '/books/truyen-ngan.png', borrowCount: 980, icon: 'fa-book' },
+  { id: 3, name: 'Truyện tranh', image: '/books/truyen-tranh.png', borrowCount: 856, icon: 'fa-image' }
+];
+
+// Top 6 categories with most books
+const topBookCategories = [
+  { id: 1, name: 'Văn học Việt Nam', bookCount: 450, color: '#FF6B6B', icon: 'fa-feather' },
+  { id: 2, name: 'Văn học nước ngoài', bookCount: 380, color: '#4ECDC4', icon: 'fa-globe' },
+  { id: 3, name: 'Khoa học công nghệ', bookCount: 320, color: '#45B7D1', icon: 'fa-laptop-code' },
+  { id: 4, name: 'Kinh tế - Quản lý', bookCount: 290, color: '#FFA07A', icon: 'fa-chart-line' },
+  { id: 5, name: 'Thiếu nhi', bookCount: 275, color: '#98D8C8', icon: 'fa-child' },
+  { id: 6, name: 'Lịch sử - Địa lý', bookCount: 240, color: '#F7DC6F', icon: 'fa-map-marked-alt' }
+];
+
+// Popular books by genre (4 genres, 5 books each)
+const popularBooksByGenre = [
+  {
+    genre: 'Văn học',
+    books: [
+      { id: 1, title: 'Đắc Nhân Tâm', author: 'Dale Carnegie', cover: '/books/dac-nhan-tam.webp', rating: 4.8 },
+      { id: 2, title: 'Mắt biếc', author: 'Nguyễn Nhật Ánh', cover: '/books/mat-biec.jpg', rating: 4.7 },
+      { id: 3, title: 'Nhà Giả Kim', author: 'Paulo Coelho', cover: '/books/dac-nhan-tam.webp', rating: 4.9 },
+      { id: 4, title: 'Tuổi Trẻ Đáng Giá Bao Nhiêu', author: 'Rosie Nguyễn', cover: '/books/mat-biec.jpg', rating: 4.6 },
+      { id: 5, title: 'Cà Phê Cùng Tony', author: 'Tony Buổi Sáng', cover: '/books/dac-nhan-tam.webp', rating: 4.5 }
+    ]
+  },
+  {
+    genre: 'Kỹ năng sống',
+    books: [
+      { id: 6, title: 'Tâm lý học tính cách', author: 'Nhiều tác giả', cover: '/books/tam-li-hoc.png', rating: 4.7 },
+      { id: 7, title: 'Nghệ thuật giao tiếp', author: 'Leil Lowndes', cover: '/books/tam-li-hoc.webp', rating: 4.6 },
+      { id: 8, title: 'Thói quen nguyên tử', author: 'James Clear', cover: '/books/tam-li-hoc.png', rating: 4.9 },
+      { id: 9, title: 'Đừng bao giờ đi ăn một mình', author: 'Keith Ferrazzi', cover: '/books/tam-li-hoc.webp', rating: 4.5 },
+      { id: 10, title: 'Sức mạnh của tư duy tích cực', author: 'Norman Vincent Peale', cover: '/books/tam-li-hoc.png', rating: 4.7 }
+    ]
+  },
+  {
+    genre: 'Khoa học viễn tưởng',
+    books: [
+      { id: 11, title: 'Harry Potter', author: 'J.K. Rowling', cover: '/books/harryposter.webp', rating: 4.9 },
+      { id: 12, title: 'The Hunger Games', author: 'Suzanne Collins', cover: '/books/harryposter.webp', rating: 4.7 },
+      { id: 13, title: 'Divergent', author: 'Veronica Roth', cover: '/books/harryposter.webp', rating: 4.6 },
+      { id: 14, title: 'The Maze Runner', author: 'James Dashner', cover: '/books/harryposter.webp', rating: 4.5 },
+      { id: 15, title: 'Percy Jackson', author: 'Rick Riordan', cover: '/books/harryposter.webp', rating: 4.8 }
+    ]
+  },
+  {
+    genre: 'Truyện tranh',
+    books: [
+      { id: 16, title: 'Doraemon', author: 'Fujiko F. Fujio', cover: '/books/truyen-tranh.png', rating: 4.8 },
+      { id: 17, title: 'Conan', author: 'Aoyama Gosho', cover: '/books/truyen-tranh.png', rating: 4.9 },
+      { id: 18, title: 'One Piece', author: 'Eiichiro Oda', cover: '/books/truyen-tranh.png', rating: 4.9 },
+      { id: 19, title: 'Dragon Ball', author: 'Akira Toriyama', cover: '/books/truyen-tranh.png', rating: 4.8 },
+      { id: 20, title: 'Naruto', author: 'Masashi Kishimoto', cover: '/books/truyen-tranh.png', rating: 4.7 }
+    ]
+  }
+];
+
+// Library services
+const services = [
+  {
+    id: 1,
+    title: 'Kho sách đa dạng',
+    description: 'Hơn 10,000+ đầu sách từ nhiều lĩnh vực khác nhau',
+    icon: 'fa-books',
+    image: '/banner/banner1.png'
+  },
+  {
+    id: 2,
+    title: 'Không gian hiện đại',
+    description: 'Thiết kế thoáng mát, yên tĩnh, phù hợp cho việc học tập',
+    icon: 'fa-building',
+    image: '/banner/banner2.png'
+  },
+  {
+    id: 3,
+    title: 'Dịch vụ tận tâm',
+    description: 'Đội ngũ thủ thư chuyên nghiệp, nhiệt tình hỗ trợ',
+    icon: 'fa-headset',
+    image: '/banner/banner3.png'
+  },
+  {
+    id: 4,
+    title: 'Công nghệ số',
+    description: 'Tra cứu và mượn sách trực tuyến dễ dàng',
+    icon: 'fa-mobile-alt',
+    image: '/banner/banner4.png'
+  }
+];
+
+// Statistics
+const statistics = [
+  { label: 'Đầu sách', value: 10000, suffix: '+', color: '#FF6B6B' },
+  { label: 'Độc giả', value: 5000, suffix: '+', color: '#4ECDC4' },
+  { label: 'Lượt mượn/tháng', value: 3000, suffix: '+', color: '#45B7D1' },
+  { label: 'Đánh giá 5 sao', value: 98, suffix: '%', color: '#FFA07A' }
+];
+
+// Contact form
+const contactForm = ref({
+  name: '',
+  email: '',
+  phone: '',
+  message: ''
+});
+
+const contactFormRef = ref(null);
+
+const contactRules = {
+  name: [{ required: true, message: 'Vui lòng nhập họ tên', trigger: 'blur' }],
+  email: [
+    { required: true, message: 'Vui lòng nhập email', trigger: 'blur' },
+    { type: 'email', message: 'Email không hợp lệ', trigger: 'blur' }
+  ],
+  phone: [
+    { required: true, message: 'Vui lòng nhập số điện thoại', trigger: 'blur' },
+    { pattern: /^(0|\+84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-5]|9[0-4|6-9])[0-9]{7}$/, message: 'Số điện thoại không hợp lệ', trigger: 'blur' }
+  ],
+  message: [{ required: true, message: 'Vui lòng nhập nội dung', trigger: 'blur' }]
+};
+
+const submitContact = () => {
+  contactFormRef.value?.validate((errors) => {
+    if (!errors) {
+      message.success('Cảm ơn bạn đã gửi góp ý! Chúng tôi sẽ liên hệ sớm nhất.');
+      contactForm.value = { name: '', email: '', phone: '', message: '' };
+    } else {
+      message.error('Vui lòng kiểm tra lại thông tin');
+    }
+  });
+};
+
+// Scroll animation observer
+const observeElements = () => {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('animate-fade-in');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.animate-on-scroll').forEach(el => {
+    observer.observe(el);
+  });
+};
+
+onMounted(() => {
+  observeElements();
+});
 </script>
 
 
@@ -72,134 +232,62 @@ const topBooks = [
                 <Search />
             </div>
         </NSpace>
-        <!-- <NSpace vertical justify="center" class="min-h-screen">
-          <NSpace class="py-32 bg-[url('/banner/banner4.png')]" vertical justify="center" align="center">
-            <div class="flex space-x-2 animate__animated animate__bounce">
-                <span class="text-7xl text-orange-500 uppercase">W</span>
-                <span class="text-7xl text-blue-500 uppercase">E</span>
-                <span class="text-7xl text-green-500 uppercase">L</span>
-                <span class="text-7xl text-orange-500 uppercase">C</span>
-                <span class="text-7xl text-orange-500 uppercase">O</span>
-                <span class="text-7xl text-orange-500 uppercase">M</span>
-                <span class="text-7xl text-orange-500 uppercase">E</span>
-            </div>
-            <h3 class="max-w-2xl text-lg text-center italic font-medium text-gray-200">
-                Thư viện của hieurury hi vọng sẽ đem đến cho bạn những trải nghiệm tuyệt vời!
-                Đến với chúng tôi để khám phá kho tàng tri thức vô tận.
-            </h3>
-            <NButton color="orange" size="large">Xem ngay</NButton>
-          </NSpace>
-        </NSpace> -->
-        <NSpace class="min-h-screen lg:px-0 px-2" justify="center" align="center" vertical>
-          <h1 class="lg:text-6xl text-4xl uppercase text-gray-600 dark:text-gray-300 font-semibold">Top thể loại được quan tâm nhất</h1>
-          <div class="py-8 grid lg:grid-cols-3 grid-cols-3" justify="center" align="center" wrap>
-            <NCard>
-              <template #cover>
-                <img class="lg:w-96 lg:h-96 w-48 h-48 object-cover" src="/books/tam-li-hoc.png" alt="">
-              </template>
-            </NCard>
-            <NCard>
-              <template #cover>
-                <img class="lg:w-96 lg:h-96 w-48 h-48 object-cover" src="/books/truyen-ngan.png" alt="">
-              </template>
-            </NCard>
-            <NCard>
-              <template #cover>
-                <img class="lg:w-96 lg:h-96 w-48 h-48 object-cover" src="/books/truyen-tranh.png" alt="">
-              </template>
-            </NCard>
-          </div>
-          <NButton color="orange" size="large">
-            <NIcon><i class="fa-solid fa-arrow-right"></i></NIcon>
-            <span>Xem thêm hơn 20+ loại sách</span>
-          </NButton>
+        <NSpace vertical justify="center" align="center" class="py-12 w-full min-h-screen">
+          <h1 class="text-3xl uppercase font-semibold my-4">Top thể loại được yêu thích nhất</h1>
+          <NGrid cols="3" x-gap="12" y-gap="12" class="w-full px-8">
+            <NGi span="1">
+              <NCard hoverable class="p-4 min-w-sm">
+                <NSpace vertical align="center" class="w-full">
+                  <NIcon size="64" class="text-blue-500">
+                    <i class="fa-solid fa-brain"></i>
+                  </NIcon>
+                  <h2 class="text-xl font-semibold">Tâm lý học</h2>
+                  <NTag type="info" size="large">1250 lượt mượn</NTag>
+                </NSpace>
+              </NCard>
+            </NGi>
+            <NGi span="1">
+              <NCard hoverable class="p-4 min-w-sm">
+                <NSpace vertical align="center" class="w-full">
+                  <NIcon size="64" class="text-green-500">
+                    <i class="fa-solid fa-book"></i>
+                  </NIcon>
+                  <h2 class="text-xl font-semibold">Truyện ngắn</h2>
+                  <NTag type="info" size="large">980 lượt mượn</NTag>
+                </NSpace>
+              </NCard>
+            </NGi>
+            <NGi span="1">
+              <NCard hoverable class="p-4 min-w-sm">
+                <NSpace vertical align="center" class="w-full">
+                  <NIcon size="64" class="text-red-500">
+                    <i class="fa-solid fa-image"></i>
+                  </NIcon>
+                  <h2 class="text-xl font-semibold">Truyện tranh</h2>
+                  <NTag type="info" size="large">856 lượt mượn</NTag>
+                </NSpace>
+              </NCard>
+            </NGi>
+          </NGrid>
         </NSpace>
-        <!--  -->
-        <NSpace class="min-h-screen px-2 lg:px-0" justify="center" align="center" vertical>
-          <h1 class="lg:text-6xl text-4xl uppercase text-gray-600 dark:text-gray-300 font-semibold">Top sách được yêu thích nhất</h1>
-          <div class="py-8 grid justify-items-center grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            <NCard
-              v-for="book in topBooks"
-              :key="book.id"
-              class="w-72"
-              hoverable
-            >
-              <template #cover>
-                <img class="w-72 h-72 object-cover" :src="book.cover" :alt="book.title">
-              </template>
-              <h3 class="text-xl font-semibold mt-2 truncate">{{ book.title }}</h3>
-              <p class="text-gray-600 dark:text-gray-300 italic">Tác giả: {{ book.author }}</p>
-            </NCard>
-          </div>
-          <NButton type="info" size="large">
-            <NIcon><i class="fa-solid fa-arrow-right"></i></NIcon>
-            <span>Xem thêm hơn 200+ sách</span>
-          </NButton>
-        </NSpace>
-        <!-- rate -->
-        <NSpace class="min-h-screen px-2 lg:px-0 bg-gray-700" justify="center" align="center" vertical>
-          <h1 class="lg:text-6xl text-4xl uppercase text-gray-200 dark:text-gray-300 font-semibold">Đánh giá từ người dùng</h1>
-          <div class="py-8 grid justify-items-center grid-cols-2 sm:grid-cols-1 md:grid-cols-2 gap-6">
-            <Ncard class="shadow p-2 bg-white dark:bg-transparent rounded">
-              <NSpace align="center">
-                <NAvatar src="/users/user1.png"/>
-                <h4 class="text-2xl font-semibold dark:text-gray-300">Đỗ Quốc Việt</h4>
-              </NSpace>
-              <NSpace justify="center" class="my-2">
-                <NEllipsis line-clamp="3" class="max-w-lg text-lg text-gray-600 dark:text-gray-300">
-                  Chất lượng dịch vụ rất tốt. Quy trình mượn và trả sách nhanh chóng.Chất lượng dịch vụ rất tốt. Quy trình mượn và trả sách nhanh chóng.
-                </NEllipsis>
-              </NSpace>
-              <NSpace>
-                <NRate readonly default-value="5"></Nrate>
-              </NSpace>
-            </Ncard>
-
-            <Ncard class="shadow p-2 bg-white dark:bg-transparent rounded">
-              <NSpace align="center">
-                <NAvatar src="/users/user1.png"/>
-                <h4 class="text-2xl font-semibold dark:text-gray-300">Đỗ Quốc Việt</h4>
-              </NSpace>
-              <NSpace justify="center" class="my-2">
-                <NEllipsis line-clamp="3" class="max-w-lg text-lg text-gray-600 dark:text-gray-300">
-                  Chất lượng dịch vụ rất tốt. Quy trình mượn và trả sách nhanh chóng.
-                </NEllipsis>
-              </NSpace>
-              <NSpace>
-                <NRate readonly default-value="5"></Nrate>
-              </NSpace>
-            </Ncard>
-
-            <Ncard class="shadow p-2 bg-white dark:bg-transparent rounded">
-              <NSpace align="center">
-                <NAvatar src="/users/user1.png"/>
-                <h4 class="text-2xl font-semibold dark:text-gray-300">Đỗ Quốc Việt</h4>
-              </NSpace>
-              <NSpace justify="center" class="my-2">
-                <NEllipsis line-clamp="3" class="max-w-lg text-lg text-gray-600 dark:text-gray-300">
-                  Chất lượng dịch vụ rất tốt. Quy trình mượn và trả sách nhanh chóng.
-                </NEllipsis>
-              </NSpace>
-
-              <NSpace>
-                <NRate readonly default-value="5"></Nrate>
-              </NSpace>
-            </Ncard>
-            <Ncard class="shadow p-2 bg-white dark:bg-transparent rounded">
-              <NSpace align="center">
-                <NAvatar src="/users/user1.png"/>
-                <h4 class="text-2xl font-semibold dark:text-gray-300">Đỗ Quốc Việt</h4>
-              </NSpace>
-              <NSpace justify="center" class="my-2">
-                <NEllipsis line-clamp="3" class="max-w-lg text-lg text-gray-600 dark:text-gray-300">
-                  Chất lượng dịch vụ rất tốt. Quy trình mượn và trả sách nhanh chóng.
-                </NEllipsis>
-              </NSpace>
-              <NSpace>
-                <NRate readonly default-value="5"></Nrate>
-              </NSpace>
-            </Ncard>
-          </div>
+        <NSpace vertical justify="center" align="center" class="py-12 w-full min-h-screen">
+          <h1 class="text-3xl uppercase font-semibold my-4">Top sách mượn nhiều nhất</h1>
+          <NGrid cols="8" x-gap="12" y-gap="12" class="w-full px-8">
+            <NGi span="1">
+              <NCard hoverable class="p-4 min-w-sm">
+                <NImage 
+                  src="/books/dac-nhan-tam.webp" 
+                  alt="Đắc Nhân Tâm" 
+                  class="mb-4 object-cover"
+                  width="100px"
+                />
+                <NSpace vertical align="center" class="w-full">
+                  <h2 class="text-xl font-semibold">Đắc Nhân Tâm</h2>
+                  <NTag type="info" size="large">1500 lượt mượn</NTag>
+                </NSpace>
+              </NCard>
+            </NGi>
+          </NGrid>
         </NSpace>
     </NSpace>
 </template>
