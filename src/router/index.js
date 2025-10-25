@@ -14,6 +14,7 @@ import RegisterView             from '../views/RegisterView.vue'
 import ProfileView              from "../views/ProfileView.vue";
 import TestAIView               from "../views/TestAIView.vue";
 import BookDetail               from "../views/BookDetail.vue";
+import BooksView                from "../views/BooksView.vue";
 
 //auth
 import {
@@ -33,7 +34,11 @@ const router = [
                 path: '',
                 name: 'Home',
                 component: HomeView,
-
+            },
+            {
+                path: 'books',
+                name: 'Books',
+                component: BooksView
             }
         ]
     },

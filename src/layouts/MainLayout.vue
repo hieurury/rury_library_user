@@ -103,6 +103,14 @@ const handleDropdownSelect = (key) => {
                         Trang chủ
                     </router-link>
                     <router-link 
+                        to="/books" 
+                        class="px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        active-class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                    >
+                        <NIcon class="mr-1"><i class="fa-solid fa-book"></i></NIcon>
+                        Sách
+                    </router-link>
+                    <router-link 
                         to="/about" 
                         class="px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                         active-class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
@@ -110,28 +118,11 @@ const handleDropdownSelect = (key) => {
                         <NIcon class="mr-1"><i class="fa-solid fa-list"></i></NIcon>
                         Danh mục
                     </router-link>
-                    <router-link 
-                        to="/user/profile" 
-                        class="px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                        active-class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                    >
-                        <NIcon class="mr-1"><i class="fa-solid fa-user"></i></NIcon>
-                        Tài khoản
-                    </router-link>
                 </NSpace>
 
                 <!-- Right Side Actions -->
                 <NSpace align="center" :size="12">
-                    <!-- Dark Mode Toggle -->
-                    <NSwitch v-model:value="isDark" size="large">
-                        <template #checked-icon>
-                            <NIcon><i class="fa-solid fa-sun"></i></NIcon>
-                        </template>
-                        <template #unchecked-icon>
-                            <NIcon><i class="fa-solid fa-moon"></i></NIcon>
-                        </template>
-                    </NSwitch>
-
+                    
                     <!-- User Dropdown if logged in -->
                     <NDropdown 
                         v-if="isLoggedIn"
@@ -165,18 +156,17 @@ const handleDropdownSelect = (key) => {
                             <RouterLink to="/auth/register">Đăng ký</RouterLink>
                         </NButton>
                     </NSpace>
-
-                    <!-- Mobile Menu Button -->
-                    <NButton 
-                        class="lg:hidden"
-                        circle
-                        size="large"
-                        @click="() => {}"
-                    >
-                        <template #icon>
-                            <NIcon><i class="fa-solid fa-bars"></i></NIcon>
+                    
+                    <!-- Dark Mode Toggle -->
+                    <NSwitch v-model:value="isDark" size="large">
+                        <template #checked-icon>
+                            <NIcon><i class="fa-solid fa-sun"></i></NIcon>
                         </template>
-                    </NButton>
+                        <template #unchecked-icon>
+                            <NIcon><i class="fa-solid fa-moon"></i></NIcon>
+                        </template>
+                    </NSwitch>
+
                 </NSpace>
             </NSpace>
         </nav>

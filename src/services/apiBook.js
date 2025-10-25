@@ -32,7 +32,20 @@ const getBookById = async (bookId) => {
     }
 };
 
+const getTopBooks = async () => {
+    try {
+        const url = `${API_BASE}/sach/top-books`;
+        console.log('📤 Get Top Books URL:', url);
+        const response = await axios.get(url);
+        return response.data;
+    } catch (error) {
+        console.error("❌ Error fetching top books:", error.response?.data || error.message);
+        throw error;
+    }
+};
+
 export {
     getAllBooks,
-    getBookById
+    getBookById,
+    getTopBooks
 };

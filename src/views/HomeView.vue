@@ -15,175 +15,93 @@ import {
     NDivider,
     NStatistic,
     NImage,
-    useMessage
+    useMessage,
+    NSkeleton,
+    NThing,
+    NText,
+    NBadge
 }                       from 'naive-ui';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, h } from 'vue';
 import { useRouter } from 'vue-router';
 import Search           from '../components/Search.vue';
-
+import {
+  getCategories,
+  getTopCategories
+}                       from '../services/apiCategories.js';
+import {
+  getTopBooks
+}                       from '../services/apiBook.js';
+const API_BASE = import.meta.env.VITE_API_BASE;
 const router = useRouter();
 const message = useMessage();
+const allCategories = ref([]);
+const topCategories = ref([]);
+const topBooks = ref([]);
+const loadingBooks = ref(false);
 
-// Banner carousel data
-const banners = [
-  { id: 1, image: '/banner/banner1.png', title: 'Khám phá tri thức' },
-  { id: 2, image: '/banner/banner2.png', title: 'Thư viện số hiện đại' },
-  { id: 3, image: '/banner/banner3.png', title: 'Đọc sách mọi lúc mọi nơi' }
-];
 
-// Top 3 categories with most borrows
-const topBorrowCategories = [
-  { id: 1, name: 'Tâm lý học', image: '/books/tam-li-hoc.png', borrowCount: 1250, icon: 'fa-brain' },
-  { id: 2, name: 'Truyện ngắn', image: '/books/truyen-ngan.png', borrowCount: 980, icon: 'fa-book' },
-  { id: 3, name: 'Truyện tranh', image: '/books/truyen-tranh.png', borrowCount: 856, icon: 'fa-image' }
-];
 
-// Top 6 categories with most books
-const topBookCategories = [
-  { id: 1, name: 'Văn học Việt Nam', bookCount: 450, color: '#FF6B6B', icon: 'fa-feather' },
-  { id: 2, name: 'Văn học nước ngoài', bookCount: 380, color: '#4ECDC4', icon: 'fa-globe' },
-  { id: 3, name: 'Khoa học công nghệ', bookCount: 320, color: '#45B7D1', icon: 'fa-laptop-code' },
-  { id: 4, name: 'Kinh tế - Quản lý', bookCount: 290, color: '#FFA07A', icon: 'fa-chart-line' },
-  { id: 5, name: 'Thiếu nhi', bookCount: 275, color: '#98D8C8', icon: 'fa-child' },
-  { id: 6, name: 'Lịch sử - Địa lý', bookCount: 240, color: '#F7DC6F', icon: 'fa-map-marked-alt' }
-];
-
-// Popular books by genre (4 genres, 5 books each)
-const popularBooksByGenre = [
-  {
-    genre: 'Văn học',
-    books: [
-      { id: 1, title: 'Đắc Nhân Tâm', author: 'Dale Carnegie', cover: '/books/dac-nhan-tam.webp', rating: 4.8 },
-      { id: 2, title: 'Mắt biếc', author: 'Nguyễn Nhật Ánh', cover: '/books/mat-biec.jpg', rating: 4.7 },
-      { id: 3, title: 'Nhà Giả Kim', author: 'Paulo Coelho', cover: '/books/dac-nhan-tam.webp', rating: 4.9 },
-      { id: 4, title: 'Tuổi Trẻ Đáng Giá Bao Nhiêu', author: 'Rosie Nguyễn', cover: '/books/mat-biec.jpg', rating: 4.6 },
-      { id: 5, title: 'Cà Phê Cùng Tony', author: 'Tony Buổi Sáng', cover: '/books/dac-nhan-tam.webp', rating: 4.5 }
-    ]
-  },
-  {
-    genre: 'Kỹ năng sống',
-    books: [
-      { id: 6, title: 'Tâm lý học tính cách', author: 'Nhiều tác giả', cover: '/books/tam-li-hoc.png', rating: 4.7 },
-      { id: 7, title: 'Nghệ thuật giao tiếp', author: 'Leil Lowndes', cover: '/books/tam-li-hoc.webp', rating: 4.6 },
-      { id: 8, title: 'Thói quen nguyên tử', author: 'James Clear', cover: '/books/tam-li-hoc.png', rating: 4.9 },
-      { id: 9, title: 'Đừng bao giờ đi ăn một mình', author: 'Keith Ferrazzi', cover: '/books/tam-li-hoc.webp', rating: 4.5 },
-      { id: 10, title: 'Sức mạnh của tư duy tích cực', author: 'Norman Vincent Peale', cover: '/books/tam-li-hoc.png', rating: 4.7 }
-    ]
-  },
-  {
-    genre: 'Khoa học viễn tưởng',
-    books: [
-      { id: 11, title: 'Harry Potter', author: 'J.K. Rowling', cover: '/books/harryposter.webp', rating: 4.9 },
-      { id: 12, title: 'The Hunger Games', author: 'Suzanne Collins', cover: '/books/harryposter.webp', rating: 4.7 },
-      { id: 13, title: 'Divergent', author: 'Veronica Roth', cover: '/books/harryposter.webp', rating: 4.6 },
-      { id: 14, title: 'The Maze Runner', author: 'James Dashner', cover: '/books/harryposter.webp', rating: 4.5 },
-      { id: 15, title: 'Percy Jackson', author: 'Rick Riordan', cover: '/books/harryposter.webp', rating: 4.8 }
-    ]
-  },
-  {
-    genre: 'Truyện tranh',
-    books: [
-      { id: 16, title: 'Doraemon', author: 'Fujiko F. Fujio', cover: '/books/truyen-tranh.png', rating: 4.8 },
-      { id: 17, title: 'Conan', author: 'Aoyama Gosho', cover: '/books/truyen-tranh.png', rating: 4.9 },
-      { id: 18, title: 'One Piece', author: 'Eiichiro Oda', cover: '/books/truyen-tranh.png', rating: 4.9 },
-      { id: 19, title: 'Dragon Ball', author: 'Akira Toriyama', cover: '/books/truyen-tranh.png', rating: 4.8 },
-      { id: 20, title: 'Naruto', author: 'Masashi Kishimoto', cover: '/books/truyen-tranh.png', rating: 4.7 }
-    ]
-  }
-];
-
-// Library services
-const services = [
-  {
-    id: 1,
-    title: 'Kho sách đa dạng',
-    description: 'Hơn 10,000+ đầu sách từ nhiều lĩnh vực khác nhau',
-    icon: 'fa-books',
-    image: '/banner/banner1.png'
-  },
-  {
-    id: 2,
-    title: 'Không gian hiện đại',
-    description: 'Thiết kế thoáng mát, yên tĩnh, phù hợp cho việc học tập',
-    icon: 'fa-building',
-    image: '/banner/banner2.png'
-  },
-  {
-    id: 3,
-    title: 'Dịch vụ tận tâm',
-    description: 'Đội ngũ thủ thư chuyên nghiệp, nhiệt tình hỗ trợ',
-    icon: 'fa-headset',
-    image: '/banner/banner3.png'
-  },
-  {
-    id: 4,
-    title: 'Công nghệ số',
-    description: 'Tra cứu và mượn sách trực tuyến dễ dàng',
-    icon: 'fa-mobile-alt',
-    image: '/banner/banner4.png'
-  }
-];
-
-// Statistics
-const statistics = [
-  { label: 'Đầu sách', value: 10000, suffix: '+', color: '#FF6B6B' },
-  { label: 'Độc giả', value: 5000, suffix: '+', color: '#4ECDC4' },
-  { label: 'Lượt mượn/tháng', value: 3000, suffix: '+', color: '#45B7D1' },
-  { label: 'Đánh giá 5 sao', value: 98, suffix: '%', color: '#FFA07A' }
-];
-
-// Contact form
-const contactForm = ref({
-  name: '',
-  email: '',
-  phone: '',
-  message: ''
+onMounted(async () => {
+  await getAllCategories();
+  await getAllTopCategories();
+  await getAllTopBooks();
 });
 
-const contactFormRef = ref(null);
+const getAllCategories = async () => {
+  try {
+    const response =  await getCategories();
+    allCategories.value = response.data;
+  } catch (error) {
+    message.error('Không thể tải danh mục thể loại.');
+  }
+}
+const getAllTopCategories = async () => {
+  try {
+    const response =  await getTopCategories();
+    topCategories.value = response.data;
+  } catch (error) {
+    message.error('Không thể tải top thể loại.');
+  }
+}
 
-const contactRules = {
-  name: [{ required: true, message: 'Vui lòng nhập họ tên', trigger: 'blur' }],
-  email: [
-    { required: true, message: 'Vui lòng nhập email', trigger: 'blur' },
-    { type: 'email', message: 'Email không hợp lệ', trigger: 'blur' }
-  ],
-  phone: [
-    { required: true, message: 'Vui lòng nhập số điện thoại', trigger: 'blur' },
-    { pattern: /^(0|\+84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-5]|9[0-4|6-9])[0-9]{7}$/, message: 'Số điện thoại không hợp lệ', trigger: 'blur' }
-  ],
-  message: [{ required: true, message: 'Vui lòng nhập nội dung', trigger: 'blur' }]
-};
+const getAllTopBooks = async () => {
+  loadingBooks.value = true;
+  try {
+    const response = await getTopBooks();
+    topBooks.value = response.data;
+  } catch (error) {
+    message.error('Không thể tải top sách.');
+  } finally {
+    loadingBooks.value = false;
+  }
+}
 
-const submitContact = () => {
-  contactFormRef.value?.validate((errors) => {
-    if (!errors) {
-      message.success('Cảm ơn bạn đã gửi góp ý! Chúng tôi sẽ liên hệ sớm nhất.');
-      contactForm.value = { name: '', email: '', phone: '', message: '' };
-    } else {
-      message.error('Vui lòng kiểm tra lại thông tin');
-    }
+const formatPrice = (price) => {
+  if(!price || isNaN(price)) return '0 ₫';
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+}
+
+// Lấy sách theo thể loại từ dữ liệu đã có
+const getBooksByCategory = (categoryId) => {
+  if (!topBooks.value || topBooks.value.length === 0) return [];
+  
+  return topBooks.value
+    .filter(book => book.THELOAI && book.THELOAI.some(tl => tl.MaLoai === categoryId))
+    .slice(0, 4); // Lấy tối đa 4 cuốn
+}
+
+// Lấy 4 thể loại đầu tiên có sách
+const getFeaturedCategories = () => {
+  if (!allCategories.value || allCategories.value.length === 0) return [];
+  
+  // Lọc các thể loại có sách
+  const categoriesWithBooks = allCategories.value.filter(category => {
+    const booksInCategory = getBooksByCategory(category.MaLoai);
+    return booksInCategory.length > 0;
   });
-};
-
-// Scroll animation observer
-const observeElements = () => {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('animate-fade-in');
-      }
-    });
-  }, { threshold: 0.1 });
-
-  document.querySelectorAll('.animate-on-scroll').forEach(el => {
-    observer.observe(el);
-  });
-};
-
-onMounted(() => {
-  observeElements();
-});
+  
+  return categoriesWithBooks.slice(0, 4);
+}
 </script>
 
 
@@ -232,62 +150,314 @@ onMounted(() => {
                 <Search />
             </div>
         </NSpace>
+        <!-- top categories -->
         <NSpace vertical justify="center" align="center" class="py-12 w-full min-h-screen">
           <h1 class="text-3xl uppercase font-semibold my-4">Top thể loại được yêu thích nhất</h1>
-          <NGrid cols="3" x-gap="12" y-gap="12" class="w-full px-8">
-            <NGi span="1">
-              <NCard hoverable class="p-4 min-w-sm">
-                <NSpace vertical align="center" class="w-full">
-                  <NIcon size="64" class="text-blue-500">
-                    <i class="fa-solid fa-brain"></i>
-                  </NIcon>
-                  <h2 class="text-xl font-semibold">Tâm lý học</h2>
-                  <NTag type="info" size="large">1250 lượt mượn</NTag>
+          <p class="text-gray-500 dark:text-gray-400 mb-8">Dựa trên số lượt mượn sách</p>
+          
+          <NGrid cols="3" x-gap="24" y-gap="24" class="w-full px-8 max-w-6xl">
+            <NGi v-for="(category, index) in topCategories" :key="category.MaLoai" span="1">
+              <NCard 
+                hoverable 
+                class="relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2"
+                :style="{ borderTop: `4px solid ${category.Color || '#18a058'}` }"
+              >
+                <!-- Badge số thứ hạng -->
+                <div 
+                  class="absolute top-4 right-4 w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg"
+                  :style="{ 
+                    background: index === 0 ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 
+                                index === 1 ? 'linear-gradient(135deg, #C0C0C0, #808080)' : 
+                                'linear-gradient(135deg, #CD7F32, #8B4513)'
+                  }"
+                >
+                  {{ index + 1 }}
+                </div>
+
+                <NSpace vertical align="center" class="w-full pt-2">
+                  <!-- Icon thể loại -->
+                  <div 
+                    class="w-24 h-24 rounded-full flex items-center justify-center mb-4 shadow-md"
+                    :style="{ backgroundColor: category.Color || '#18a058' }"
+                  >
+                    <NImage 
+                      v-if="category.Icon"
+                      :src="`${API_BASE}/${category.Icon}`" 
+                      :alt="category.TenLoai" 
+                    />
+                    <NIcon v-else size="48" color="white">
+                      <i class="fa-solid fa-book"></i>
+                    </NIcon>
+                  </div>
+
+                  <!-- Tên thể loại -->
+                  <h2 class="text-2xl font-bold text-center">{{ category.TenLoai }}</h2>
+                  
+                  <!-- Mô tả -->
+                  <NEllipsis 
+                    v-if="category.MoTa" 
+                    :line-clamp="2" 
+                    class="text-gray-500 dark:text-gray-400 text-center text-sm px-4"
+                  >
+                    {{ category.MoTa }}
+                  </NEllipsis>
+
+                  <NDivider class="my-3" />
+
+                  <!-- Số lượt mượn -->
+                  <NSpace align="center" class="w-full" justify="center">
+                    <NIcon size="20" :color="category.Color || '#18a058'">
+                      <i class="fa-solid fa-heart"></i>
+                    </NIcon>
+                    <NStatistic>
+                      <template #label>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Lượt mượn</span>
+                      </template>
+                      <template #default>
+                        <span class="text-2xl font-bold" :style="{ color: category.Color || '#18a058' }">
+                          {{ category.BorrowCount || 0 }}
+                        </span>
+                      </template>
+                    </NStatistic>
+                  </NSpace>
                 </NSpace>
               </NCard>
             </NGi>
-            <NGi span="1">
-              <NCard hoverable class="p-4 min-w-sm">
-                <NSpace vertical align="center" class="w-full">
-                  <NIcon size="64" class="text-green-500">
-                    <i class="fa-solid fa-book"></i>
-                  </NIcon>
-                  <h2 class="text-xl font-semibold">Truyện ngắn</h2>
-                  <NTag type="info" size="large">980 lượt mượn</NTag>
-                </NSpace>
-              </NCard>
-            </NGi>
-            <NGi span="1">
-              <NCard hoverable class="p-4 min-w-sm">
-                <NSpace vertical align="center" class="w-full">
-                  <NIcon size="64" class="text-red-500">
-                    <i class="fa-solid fa-image"></i>
-                  </NIcon>
-                  <h2 class="text-xl font-semibold">Truyện tranh</h2>
-                  <NTag type="info" size="large">856 lượt mượn</NTag>
-                </NSpace>
-              </NCard>
+
+            <!-- Hiển thị thông báo nếu không có dữ liệu -->
+            <NGi v-if="topCategories.length === 0" span="3">
+              <NGrid cols="3" class="w-full" x-gap="12" y-gap="12">
+                <NGi class="min-w-sm" v-for="value in 3" :key="value" span="1">
+                  <NSkeleton
+                    height="300px"
+                    width="100%"
+                  />
+                </NGi>
+              </NGrid>
             </NGi>
           </NGrid>
         </NSpace>
-        <NSpace vertical justify="center" align="center" class="py-12 w-full min-h-screen">
+        <!-- top books -->
+        <NSpace vertical justify="center" align="center" class="py-12 w-full min-h-screen bg-gradient-to-b from-transparent to-gray-50 dark:to-gray-900">
           <h1 class="text-3xl uppercase font-semibold my-4">Top sách mượn nhiều nhất</h1>
-          <NGrid cols="8" x-gap="12" y-gap="12" class="w-full px-8">
-            <NGi span="1">
-              <NCard hoverable class="p-4 min-w-sm">
-                <NImage 
-                  src="/books/dac-nhan-tam.webp" 
-                  alt="Đắc Nhân Tâm" 
-                  class="mb-4 object-cover"
-                  width="100px"
-                />
-                <NSpace vertical align="center" class="w-full">
-                  <h2 class="text-xl font-semibold">Đắc Nhân Tâm</h2>
-                  <NTag type="info" size="large">1500 lượt mượn</NTag>
-                </NSpace>
-              </NCard>
+          <p class="text-gray-500 dark:text-gray-400 mb-8">6 đầu sách được độc giả yêu thích</p>
+          
+          <NGrid cols="3" x-gap="24" y-gap="24" class="w-full px-8 max-w-7xl">
+            <!-- Loading skeleton -->
+            <NGi v-if="loadingBooks" v-for="n in 6" :key="`skeleton-${n}`" span="1">
+              <NSkeleton height="400px" width="100%" />
+            </NGi>
+
+            <!-- Book cards -->
+            <NGi v-else v-for="book in topBooks" :key="book.MASACH" span="1">
+              <NBadge processing>
+                  <template #value>
+                    <NIcon>
+                      <i class="fa-solid fa-fire"></i>
+                    </NIcon>
+                    <span class="ml-0.5">{{ book.BorrowCount || 0 }}</span>
+                  </template>
+                <NThing hoverable class="shadow rounded-md">
+                  <template #description>
+                    <NGrid cols="3">
+                      <NGi span="1">
+                        <NSpace align="center" class="h-full">
+                          <NImage 
+                            :src="`${API_BASE}/${book.HINHANH}`" 
+                            :alt="book.TENSACH" 
+                            preview-src-list="[`${API_BASE}/${book.ANH_BIA}`]"
+                          />
+                        </NSpace>
+                      </NGi>
+                      <NGi span="2">
+                        <NSpace vertical class="p-4">
+                          <NEllipsis :line-clamp="1">
+                            <h3 class="text-lg uppercase font-semibold mb-2">{{ book.TENSACH }}</h3>
+                          </NEllipsis>
+                          <NEllipsis :line-clamp="2">
+                            <p class="text-gray-600 dark:text-gray-300 text-sm mb-2">{{ book.MOTA }}</p>
+                          </NEllipsis>
+                          <NSpace>
+                            <NTag v-for="category in book.THELOAI" :color="{color: category.Color}" size="small">{{ category.TenLoai }}</NTag>
+                          </NSpace>
+                          <NSpace justify="space-between" align="center">
+                            <NTag type="warning">{{ formatPrice(book.DONGIA || book.GIABAN || 0) }}/quyển</NTag>
+                          </NSpace>
+                        </NSpace>
+                      </NGi>
+                    </NGrid>
+                  </template>
+                </NThing>
+              </NBadge>
+            </NGi>
+
+            <!-- Empty state -->
+            <NGi v-if="!loadingBooks && topBooks.length === 0" span="3">
+              <NGrid cols="3" class="w-full" x-gap="12" y-gap="12">
+                <NGi class="min-w-sm" v-for="value in 6" :key="value" span="1">
+                  <NSkeleton
+                    height="300px"
+                    width="100%"
+                  />
+                </NGi>
+              </NGrid>
             </NGi>
           </NGrid>
+        </NSpace>
+
+        <!-- Sách theo loại -->
+        <NSpace 
+          vertical 
+          justify="center" 
+          align="center" 
+          class="py-16 w-full min-h-screen bg-white dark:bg-gray-800"
+        >
+          <h1 class="text-3xl uppercase font-semibold my-4">Khám phá sách theo thể loại</h1>
+          <p class="text-gray-500 dark:text-gray-400 mb-8">Tuyển chọn sách hay theo từng thể loại</p>
+
+          <NSpace vertical size="large" class="w-full px-8 max-w-7xl">
+            <!-- Lặp qua 4 thể loại -->
+            <div 
+              v-for="category in getFeaturedCategories()" 
+              :key="category.MaLoai"
+              class="category-section"
+            >
+              <!-- Header thể loại -->
+              <NCard 
+                class="mb-4"
+                :style="{ 
+                  borderLeft: `6px solid ${category.Color || '#18a058'}`,
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)',
+                }"
+              >
+                <NSpace justify="space-between" align="center">
+                  <NSpace align="center">
+                    <!-- Icon thể loại -->
+                    <div 
+                      class="w-12 h-12 rounded-lg flex items-center justify-center shadow-md"
+                      :style="{ backgroundColor: category.Color || '#18a058' }"
+                    >
+                      <NImage 
+                        v-if="category.Icon"
+                        :src="`${API_BASE}/${category.Icon}`"
+                        :alt="category.TenLoai"
+                        width="32"
+                      />
+                      <NIcon v-else size="24" color="white">
+                        <i class="fa-solid fa-book"></i>
+                      </NIcon>
+                    </div>
+                    
+                    <!-- Tên thể loại -->
+                    <div>
+                      <h2 class="text-2xl font-bold" :style="{ color: category.Color || '#18a058' }">
+                        {{ category.TenLoai }}
+                      </h2>
+                      <p v-if="category.MoTa" class="text-sm text-gray-500 dark:text-gray-400">
+                        {{ category.MoTa }}
+                      </p>
+                    </div>
+                  </NSpace>
+
+                  <!-- Nút xem tất cả -->
+                  <NButton 
+                    text 
+                    type="primary"
+                    @click="router.push(`/category/${category.MaLoai}`)"
+                  >
+                    Xem tất cả
+                    <template #icon>
+                      <NIcon>
+                        <i class="fa-solid fa-arrow-right"></i>
+                      </NIcon>
+                    </template>
+                  </NButton>
+                </NSpace>
+              </NCard>
+
+              <!-- Grid sách 1x4 -->
+              <NGrid cols="4" x-gap="16" y-gap="16">
+                <NGi 
+                  v-for="book in getBooksByCategory(category.MaLoai)" 
+                  :key="book.MASACH" 
+                  span="1"
+                >
+                  <NCard 
+                    hoverable 
+                    class="h-full group bg-white dark:bg-gray-800 shadow-md rounded-lg cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all hover:shadow-xl"
+                    @click="router.push(`/book/${book.MASACH}`)"
+                  >
+                    <NGrid :cols="5" x-gap="8" y-gap="8">
+                      <!-- Book Image - 2 cột -->
+                      <NGi span="2" class="relative">
+                        <div 
+                          :style="`background-image: url(${API_BASE}/${book.HINHANH});`" 
+                          class="bg-no-repeat bg-center bg-contain min-h-[140px] rounded-md"
+                        ></div>
+                      </NGi>
+                      
+                      <!-- Book Info - 3 cột -->
+                      <NGi span="3">
+                        <NThing>
+                          <template #description>
+                            <!-- Title -->
+                            <NEllipsis :line-clamp="2" class="mb-1">
+                              <h3 class="text-sm font-semibold">{{ book.TENSACH }}</h3>
+                            </NEllipsis>
+                            
+                            <!-- Author -->
+                            <NText class="text-xs text-gray-500 dark:text-gray-400 block mb-2">
+                              <i class="fa-solid fa-user mr-1"></i>
+                              {{ book.TACGIA }}
+                            </NText>
+                            
+                            <!-- Description -->
+                            <NEllipsis :line-clamp="2" class="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                              {{ book.MOTA }}
+                            </NEllipsis>
+                            
+                            <!-- Price -->
+                            <NTag type="warning" size="small">
+                              <i class="fa-solid fa-tag mr-1"></i>
+                              {{ formatPrice(book.DONGIA || book.GIABAN || 0) }}
+                            </NTag>
+                          </template>
+                        </NThing>
+                      </NGi>
+                    </NGrid>
+                  </NCard>
+                </NGi>
+
+                <!-- Empty slots nếu ít hơn 4 sách -->
+                <!-- <NGi 
+                  v-for="n in (4 - getBooksByCategory(category.MaLoai).length)" 
+                  :key="`empty-${n}`" 
+                  span="1"
+                >
+                  <NCard class="h-full bg-gray-50 dark:bg-gray-800/50 border-2 border-dashed border-gray-200 dark:border-gray-700">
+                    <NSpace vertical align="center" justify="center" class="h-full min-h-[160px]">
+                      <NIcon size="32" color="#ccc">
+                        <i class="fa-solid fa-book"></i>
+                      </NIcon>
+                      <NText class="text-xs text-gray-400">Đang cập nhật</NText>
+                    </NSpace>
+                  </NCard>
+                </NGi> -->
+              </NGrid>
+            </div>
+
+            <!-- Empty state nếu không có thể loại nào -->
+            <NCard v-if="getFeaturedCategories().length === 0" class="text-center">
+              <NGrid cols="4" class="w-full" x-gap="12" y-gap="12">
+                <NGi class="min-w-sm" v-for="value in 4" :key="value" span="1">
+                  <NSkeleton
+                    height="300px"
+                    width="100%"
+                  />
+                </NGi>
+              </NGrid>
+            </NCard>
+          </NSpace>
         </NSpace>
     </NSpace>
 </template>
@@ -355,4 +525,13 @@ onMounted(() => {
   width: 40px;
   background: #fff;
 }
+
+.category-section {
+  margin-bottom: 3rem;
+}
+
+.category-section:last-child {
+  margin-bottom: 0;
+}
+
 </style>
