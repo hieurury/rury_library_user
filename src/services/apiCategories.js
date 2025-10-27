@@ -6,7 +6,6 @@ const getCategories = async () => {
         const response = await axios.get(`${API_BASE}/the-loai/all`);
         return response.data;
     } catch (error) {
-        console.error('Error fetching categories:', error);
         throw error;
     }
 };
@@ -16,7 +15,6 @@ const getTopCategories = async () => {
         const response = await axios.get(`${API_BASE}/the-loai/top-categories`);
         return response.data;
     } catch (error) {
-        console.error('Error fetching top categories:', error);
         throw error;
     }
 };

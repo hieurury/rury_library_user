@@ -61,7 +61,6 @@ const submitForm                =       () => {
                 DIENTHOAI: formData.value.phone,
                 PASSWORD: formData.value.password
             };
-            console.log(data);
             const response      =       await loginccount(data);
             message[response.status](response.message);
             if(response.status === 'success') {

@@ -18,7 +18,6 @@ onMounted(async () => {
     bookId.value = route.params.id;
     const rs = await getBookById(bookId.value);
     bookData.value = rs.data || [];
-    console.log(bookData.value);
 })
 </script>
 

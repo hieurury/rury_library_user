@@ -1,33 +1,44 @@
 import axios from "axios";
-import { GoogleGenAI }      from    "@google/genai";
-import {
-    LIBRARY_DATA,
-    RESPONSE_RULES,
-    PERFECT_RESPONSE,
-    SUPPORT_ANOTHER_BOOKS
-}                           from    "../services/supportAI";
-import {
-    getAllBooks
-}                           from    "../services/apiBook";
-import {
-    getBorrowWithUserId,
-    getBorrowInfo,
-    getAllBorrowsInfo
-}                           from    "../services/apiBorrow";
-import {
-    getAccountData
-}                           from    "../hooks/useAccount.js";
-import { 
-    computed 
-}                           from    "vue";
-import {
-    useMessage
-}                           from    "naive-ui";
+import { GoogleGenAI } from "@google/genai";
+import { LIBRARY_DATA, RESPONSE_RULES, PERFECT_RESPONSE, SUPPORT_ANOTHER_BOOKS } from "../services/supportAI";
+import { getAllBooks } from "../services/apiBook";
+import { getBorrowWithUserId, getBorrowInfo, getAllBorrowsInfo } from "../services/apiBorrow";
+import { getAccountData } from "../hooks/useAccount.js";
+import { computed, ref } from "vue";
+
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API;
-const messageNoti = useMessage();
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
+// Session storage for chat history
+const CHAT_HISTORY_KEY = 'rurylib_chat_history';
 
+// Get chat history from session storage
+const getChatHistory = () => {
+    try {
+        const history = sessionStorage.getItem(CHAT_HISTORY_KEY);
+        return history ? JSON.parse(history) : [];
+    } catch (error) {
+        return [];
+    }
+};
+
+// Save chat history to session storage
+const saveChatHistory = (history) => {
+    try {
+        sessionStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(history));
+    } catch (error) {
+        // Storage full or other error
+    }
+};
+
+// Clear chat history
+const clearChatHistory = () => {
+    try {
+        sessionStorage.removeItem(CHAT_HISTORY_KEY);
+    } catch (error) {
+        // Ignore error
+    }
+};
 
 async function generate({
     message, 
@@ -37,10 +48,6 @@ async function generate({
     short_response = false,
     lab_borrows = false
 }) {
-    // if(!message) {
-    //     messageNoti.error("Vui lòng nhập tin nhắn!");
-    //     return;
-    // }
     const booksData = computed(async() => {
         if(has_books) {
             const rs = await getAllBooks();
@@ -49,6 +56,7 @@ async function generate({
             return [];
         }
     });
+    
     const borrowData = computed(async() => {
         if(borrow_data) {
             const account = getAccountData();
@@ -56,7 +64,6 @@ async function generate({
                 return null;
             }
             const rs = await getBorrowWithUserId(account.MADOCGIA);
-            //lấy chi tiết thông tin mượn trả
             const detailedBorrows = await Promise.all(rs.data.map(async(borrow) => {
                 const info = await getBorrowInfo(borrow.MAPHIEU);
                 return info;
@@ -69,7 +76,6 @@ async function generate({
 
     const labBorrowsData = computed(async() => {
         if(lab_borrows) {
-            //thông tin nhạy cảm, config lại
             const allInfoBorrows = await getAllBorrowsInfo();
             const configData = allInfoBorrows.data.map(borrow => {
                 return {
@@ -130,11 +136,11 @@ async function generate({
     system_instruction: {
         parts: [
             {
-                text: `Bạn LÀ một trợ lý AI chuyên gia về thư viện, tên là 'Thủ Thư AI'.
+                text: `Bạn LÀ một trợ lý AI chuyên gia về thư viện, tên là 'Mọt'.
                 BẠN PHẢI TUÂN THỦ NGHIÊM NGẶT CÁC QUY TẮC SAU:
                 1.  **CHỈ ĐƯỢC PHÉP** thảo luận về các chủ đề liên quan đến sách, tác giả, và tác phẩm văn học.
                 2.  **BẮT BUỘC** sử dụng tiếng Việt.
-                3.  Với **BẤT KỲ** câu hỏi nào không thuộc chủ đề cho phép ở quy tắc 1, bạn **PHẢI** trả lời chính xác bằng câu: "Tôi là Thủ Thư AI, tôi chỉ có thể hỗ trợ các vấn đề về sách vở."
+                3.  Với **BẤT KỲ** câu hỏi nào không thuộc chủ đề cho phép ở quy tắc 1, bạn **PHẢI** trả lời chính xác bằng câu: "Tôi là Mọt, tôi chỉ có thể hỗ trợ các vấn đề về sách vở."
                 4.  **KHÔNG** được thêm bất kỳ thông tin nào khác ngoài câu trả lời ở quy tắc 3 khi từ chối.`
             }
         ]
@@ -146,6 +152,9 @@ async function generate({
 
 
 export default {
-    generate
+    generate,
+    getChatHistory,
+    saveChatHistory,
+    clearChatHistory
 }
 

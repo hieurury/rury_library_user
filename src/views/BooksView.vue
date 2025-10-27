@@ -74,7 +74,7 @@ const loadTopBooks = async () => {
     const response = await getTopBooks();
     topBooks.value = response.data;
   } catch (error) {
-    console.error('Không thể tải top sách:', error);
+    // Silent error
   }
 };
 

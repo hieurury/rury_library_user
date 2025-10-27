@@ -8,17 +8,18 @@ import {
     NAvatar,
     NCard,
     NIcon,
-    NAlert
-}                       from    "naive-ui";
-import {
-    marked
-}                       from    "marked";
-import {
-    ref,
-    nextTick,
-    watch
-}                       from    "vue";
-import AI               from '../hooks/useAI.js';
+    NSwitch,
+    NDivider,
+    NLayout,
+    NLayoutContent,
+    NLayoutSider,
+    NText,
+    NTag,
+    NScrollbar
+} from "naive-ui";
+import { marked } from "marked";
+import { ref, nextTick, watch, onMounted } from "vue";
+import AI from '../hooks/useAI.js';
 
 const message = useMessage();
 const history = ref([]);
@@ -26,37 +27,58 @@ const userRequest = ref('');
 const loading = ref(false);
 const chatHistoryRef = ref(null);
 
+// AI Configuration toggles
+const enableBooks = ref(false);
+const enableBorrowData = ref(false);
+const enableLabBorrows = ref(false);
+
+// Suggested questions
+const suggestedQuestions = [
+    { icon: 'fa-info-circle', text: 'Giới thiệu về thư viện RuryLib', category: 'info' },
+    { icon: 'fa-book', text: 'Có những thể loại sách nào?', category: 'books' },
+    { icon: 'fa-chart-line', text: 'Thống kê tình hình mượn trả sách', category: 'stats' },
+    { icon: 'fa-list-check', text: 'Nội quy thư viện là gì?', category: 'rules' },
+    { icon: 'fa-clock', text: 'Thời gian mượn sách tối đa', category: 'rules' },
+    { icon: 'fa-tag', text: 'Giá mượn sách như thế nào?', category: 'info' }
+];
+
+// Load chat history from session storage on mount
+onMounted(() => {
+    history.value = AI.getChatHistory();
+});
+
+// Save chat history whenever it changes
+watch(history, (newHistory) => {
+    AI.saveChatHistory(newHistory);
+    scrollToBottom();
+}, { deep: true });
+
 const scrollToBottom = () => {
     nextTick(() => {
-        const el = chatHistoryRef.value;
+        const el = chatHistoryRef.value?.$el || chatHistoryRef.value;
         if (el) {
             el.scrollTop = el.scrollHeight;
         }
     });
 };
 
-watch(history, () => {
-    scrollToBottom();
-}, { deep: true });
-
 const markdownRender = (value) => {
     if (!value) return '';
     return marked(value);
 }
 
-const sendRequest = async() => {
-    if (!userRequest.value.trim() || loading.value) return;
+const sendRequest = async (questionText = null) => {
+    const requestText = questionText || userRequest.value;
+    if (!requestText.trim() || loading.value) return;
 
-    const currentRequest = userRequest.value;
     history.value.push({ 
         isUser: true,
-        message: currentRequest 
+        message: requestText 
     });
     userRequest.value = '';
     loading.value = true;
     scrollToBottom();
     
-    // Add a placeholder for AI response
     const aiMessageIndex = history.value.length;
     history.value.push({
         isUser: false,
@@ -65,9 +87,14 @@ const sendRequest = async() => {
     scrollToBottom();
 
     try {
-        const response = await AI.generate({message: currentRequest, has_books: true, borrow_data: true, lab_borrows: true});
+        const response = await AI.generate({
+            message: requestText, 
+            has_books: enableBooks.value, 
+            borrow_data: enableBorrowData.value, 
+            lab_borrows: enableLabBorrows.value
+        });
+        
         if(response) {
-            console.log(response);
             history.value[aiMessageIndex].message = response;
         } else {
             message.error("Không nhận được phản hồi từ AI.");
@@ -76,134 +103,255 @@ const sendRequest = async() => {
     } catch (error) {
         message.error("Lỗi khi kết nối đến AI.");
         history.value[aiMessageIndex].message = "Xin lỗi, đã có lỗi xảy ra.";
-        console.error(error);
     } finally {
         loading.value = false;
         scrollToBottom();
     }
 }
+
+const clearHistory = () => {
+    history.value = [];
+    AI.clearChatHistory();
+    message.success('Đã xóa lịch sử chat');
+}
 </script>
 
-
 <template>
-    <div class="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 py-8 px-4 md:px-8">
-        <NSpace vertical justify="center" align="center" class=" mx-auto">
-            <!-- Header -->
-            <div class="text-center mb-6">
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100 mb-1">
-                    Thủ Thư AI
-                </h1>
-                <p class="text-sm md:text-base text-gray-600 dark:text-gray-400">
-                    Hỏi đáp về sách và tìm kiếm các tác phẩm yêu thích
-                </p>
-            </div>
+    <NLayout has-sider class="min-h-screen">
+        <!-- Content - Chat Area -->
+        <NLayoutContent class="bg-gradient-to-b from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800">
+            <div class="h-full flex flex-col p-6 max-w-4xl mx-auto">
+                <!-- Header -->
+                <div class="text-center mb-6">
+                    <NAvatar round src="/AI-logo.png" :size="80" class="mb-3" />
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100 mb-1">
+                        Thủ Thư Mọt
+                    </h1>
+                    <p class="text-sm md:text-base text-gray-600 dark:text-gray-400">
+                        Trợ lý AI chuyên về sách và thư viện
+                    </p>
+                </div>
 
-            <!-- Chat Container -->
-            <NCard class="w-full shadow-lg" :segmented="{ content: true, footer: 'soft' }">
-                <!-- Chat History -->
-                <div ref="chatHistoryRef" class="chat-history max-h-[500px] overflow-y-auto p-4 bg-white dark:bg-gray-800">
-                    <div v-if="history.length === 0" class="flex flex-col items-center justify-center h-56">
-                        <NAvatar round src="/logo.png" :size="70" class="mb-3" />
-                        <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-1">
-                            Xin chào, tôi là Thủ Thư AI
-                        </h2>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 text-center max-w-xs">
-                            Hỏi tôi về sách, tác giả hoặc thư viện
+                <!-- Chat Container -->
+                <NCard class="flex-1 shadow-lg flex flex-col" :segmented="{ content: true, footer: 'soft' }">
+                    <!-- Chat History -->
+                    <NScrollbar ref="chatHistoryRef" class="flex-1" style="max-height: calc(100vh - 400px);">
+                        <div class="p-4 bg-white dark:bg-gray-800">
+                            <!-- Welcome Message -->
+                            <div v-if="history.length === 0" class="flex flex-col items-center justify-center py-12">
+                                <NAvatar round src="/AI-logo.png" :size="70" class="mb-3" />
+                                <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-1">
+                                    Xin chào, tôi là Mọt
+                                </h2>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 text-center max-w-xs mb-6">
+                                    Hỏi tôi về sách, tác giả hoặc thư viện RuryLib
+                                </p>
+
+                                <!-- Suggested Questions Grid -->
+                                <div class="w-full max-w-2xl">
+                                    <NText class="block mb-3 text-sm font-semibold text-gray-600 dark:text-gray-400">
+                                        💡 Một số câu hỏi gợi ý:
+                                    </NText>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <NCard 
+                                            v-for="(question, index) in suggestedQuestions" 
+                                            :key="index"
+                                            hoverable
+                                            size="small"
+                                            class="cursor-pointer hover:shadow-md transition-shadow"
+                                            @click="sendRequest(question.text)"
+                                        >
+                                            <NSpace align="center" :size="8">
+                                                <NIcon :color="question.category === 'info' ? '#3b82f6' : question.category === 'books' ? '#10b981' : question.category === 'stats' ? '#f59e0b' : '#8b5cf6'">
+                                                    <i :class="`fa-solid ${question.icon}`"></i>
+                                                </NIcon>
+                                                <NText class="text-sm">{{ question.text }}</NText>
+                                            </NSpace>
+                                        </NCard>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chat Messages -->
+                            <div v-else class="space-y-3">
+                                <div v-for="(chat, index) in history" :key="index" class="chat-turn" :class="{'user-turn': chat.isUser, 'ai-turn': !chat.isUser}">
+                                    <NSpace :align="chat.isUser ? 'flex-end' : 'flex-start'" :justify="chat.isUser ? 'flex-end' : 'flex-start'" class="gap-2">
+                                        <NAvatar 
+                                            v-if="!chat.isUser"
+                                            round
+                                            src="/AI-logo.png" 
+                                            :size="36" 
+                                            class="flex-shrink-0"
+                                        />
+                                        <div class="message-bubble" :class="{'user-message': chat.isUser, 'ai-message': !chat.isUser}">
+                                            <NSpin v-if="loading && chat.message === '...'" size="small" />
+                                            <div v-else-if="chat.isUser" class="text-white text-sm">
+                                                {{ chat.message }}
+                                            </div>
+                                            <div v-else class="markdown-body text-sm" v-html="markdownRender(chat.message)"></div>
+                                        </div>
+                                        <NAvatar 
+                                            v-if="chat.isUser"
+                                            round
+                                            src="/users/default-avatar.svg" 
+                                            :size="36" 
+                                            class="flex-shrink-0"
+                                        />
+                                    </NSpace>
+                                </div>
+                            </div>
+                        </div>
+                    </NScrollbar>
+
+                    <!-- Input Area -->
+                    <template #footer>
+                        <NSpace vertical class="w-full gap-2">
+                            <NInput 
+                                v-model:value="userRequest" 
+                                type="textarea" 
+                                :autosize="{ minRows: 2, maxRows: 3 }"
+                                placeholder="Hỏi Mọt bất cứ điều gì về sách..."
+                                :disabled="loading"
+                                @keyup.ctrl.enter="sendRequest()"
+                                class="bg-white dark:bg-gray-700"
+                            />
+                            <NButton 
+                                @click="sendRequest()" 
+                                type="primary" 
+                                block 
+                                :loading="loading" 
+                                :disabled="loading || !userRequest.trim()"
+                            >
+                                <template #icon>
+                                    <NIcon v-if="!loading"><i class="fa-solid fa-paper-plane"></i></NIcon>
+                                </template>
+                                {{ loading ? 'Đang xử lý...' : 'Gửi (Ctrl + Enter)' }}
+                            </NButton>
+                        </NSpace>
+                    </template>
+                </NCard>
+            </div>
+        </NLayoutContent>
+
+        <!-- Sider - Settings -->
+        <NLayoutSider
+            bordered
+            show-trigger
+            collapse-mode="width"
+            :collapsed-width="0"
+            :width="320"
+            :native-scrollbar="false"
+            class="bg-white dark:bg-gray-800"
+        >
+            <div class="p-6">
+                <NSpace vertical size="large">
+                    <!-- Header -->
+                    <div>
+                        <h2 class="text-xl font-bold mb-1">Cài đặt</h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            Bật/tắt nguồn dữ liệu để tối ưu phản hồi
                         </p>
                     </div>
 
-                    <div v-else class="space-y-3">
-                        <div v-for="(chat, index) in history" :key="index" class="chat-turn" :class="{'user-turn': chat.isUser, 'ai-turn': !chat.isUser}">
-                            <NSpace :align="chat.isUser ? 'flex-end' : 'flex-start'" :justify="chat.isUser ? 'flex-end' : 'flex-start'" class="gap-2">
-                                <NAvatar 
-                                    v-if="!chat.isUser"
-                                    round
-                                    src="/logo.png" 
-                                    :size="36" 
-                                    class="flex-shrink-0"
-                                />
-                                <div class="message-bubble" :class="{'user-message': chat.isUser, 'ai-message': !chat.isUser}">
-                                    <NSpin v-if="loading && chat.message === '...'" size="small" />
-                                    <div v-else-if="chat.isUser" class="text-white text-sm">
-                                        {{ chat.message }}
-                                    </div>
-                                    <div v-else class="markdown-body text-sm" v-html="markdownRender(chat.message)"></div>
+                    <NDivider class="!my-2" />
+
+                    <!-- Data Toggles -->
+                    <div>
+                        <NText class="block mb-3 font-semibold text-sm">Nguồn dữ liệu</NText>
+                        
+                        <!-- Enable Books -->
+                        <NCard size="small" class="mb-3">
+                            <NSpace justify="space-between" align="center">
+                                <div>
+                                    <NText class="block font-medium text-sm mb-1">
+                                        <NIcon class="mr-1"><i class="fa-solid fa-book"></i></NIcon>
+                                        Dữ liệu sách
+                                    </NText>
+                                    <NText depth="3" class="text-xs">
+                                        Danh sách tất cả sách trong thư viện
+                                    </NText>
                                 </div>
-                                <NAvatar 
-                                    v-if="chat.isUser"
-                                    round
-                                    src="/users/default-avatar.svg" 
-                                    :size="36" 
-                                    class="flex-shrink-0"
-                                />
+                                <NSwitch v-model:value="enableBooks" />
                             </NSpace>
-                        </div>
+                        </NCard>
+
+                        <!-- Enable Borrow Data -->
+                        <NCard size="small" class="mb-3">
+                            <NSpace justify="space-between" align="center">
+                                <div>
+                                    <NText class="block font-medium text-sm mb-1">
+                                        <NIcon class="mr-1"><i class="fa-solid fa-user-clock"></i></NIcon>
+                                        Lịch sử mượn của tôi
+                                    </NText>
+                                    <NText depth="3" class="text-xs">
+                                        Thông tin sách bạn đang mượn
+                                    </NText>
+                                </div>
+                                <NSwitch v-model:value="enableBorrowData" />
+                            </NSpace>
+                        </NCard>
+
+                        <!-- Enable Lab Borrows -->
+                        <NCard size="small">
+                            <NSpace justify="space-between" align="center">
+                                <div>
+                                    <NText class="block font-medium text-sm mb-1">
+                                        <NIcon class="mr-1"><i class="fa-solid fa-chart-bar"></i></NIcon>
+                                        Thống kê thư viện
+                                    </NText>
+                                    <NText depth="3" class="text-xs">
+                                        Dữ liệu mượn trả toàn thư viện
+                                    </NText>
+                                </div>
+                                <NSwitch v-model:value="enableLabBorrows" />
+                            </NSpace>
+                        </NCard>
                     </div>
-                </div>
 
-                <!-- Input Area -->
-                <template #footer>
-                    <NSpace vertical class="w-full gap-2">
-                        <NInput 
-                            v-model:value="userRequest" 
-                            type="textarea" 
-                            :autosize="{ minRows: 2, maxRows: 3 }"
-                            placeholder="Hỏi tôi bất cứ điều gì về sách..."
-                            :disabled="loading"
-                            @keyup.enter.prevent="sendRequest"
-                            class="bg-white dark:bg-gray-700"
-                        />
+                    <NDivider class="!my-2" />
+
+                    <!-- Info -->
+                    <div>
+                        <NText class="block mb-2 font-semibold text-sm">Lưu ý</NText>
+                        <NCard size="small" class="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+                            <NText class="text-xs text-gray-600 dark:text-gray-400">
+                                <NIcon class="mr-1" color="#3b82f6"><i class="fa-solid fa-lightbulb"></i></NIcon>
+                                Bật nhiều nguồn dữ liệu sẽ giúp Mọt trả lời chính xác hơn nhưng có thể làm tăng thời gian phản hồi.
+                            </NText>
+                        </NCard>
+                    </div>
+
+                    <!-- Chat Actions -->
+                    <div>
                         <NButton 
-                            @click="sendRequest" 
-                            type="primary" 
-                            block 
-                            :loading="loading" 
-                            :disabled="loading || !userRequest.trim()"
-                            size="small"
+                            @click="clearHistory" 
+                            secondary 
+                            block
+                            type="error"
+                            :disabled="history.length === 0"
                         >
-                            <NIcon v-if="!loading"><i class="fa-solid fa-paper-plane"></i></NIcon>
-                            {{ loading ? 'Xử lý...' : 'Gửi' }}
+                            <template #icon>
+                                <NIcon><i class="fa-solid fa-trash"></i></NIcon>
+                            </template>
+                            Xóa lịch sử chat
                         </NButton>
-                    </NSpace>
-                </template>
-            </NCard>
+                    </div>
 
-            <!-- Info Alert -->
-            <NAlert type="info" closable class="w-full text-sm text-gray-700 dark:text-gray-300">
-                <template #icon>
-                    <NIcon><i class="fa-solid fa-circle-info"></i></NIcon>
-                </template>
-                💡 Hỏi tôi về thể loại sách, tác giả hoặc những sách bạn tìm kiếm!
-            </NAlert>
-        </NSpace>
-    </div>
+                    <!-- Stats -->
+                    <div class="text-center pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <NTag size="small" :bordered="false">
+                            <NIcon class="mr-1"><i class="fa-solid fa-message"></i></NIcon>
+                            {{ history.length }} tin nhắn
+                        </NTag>
+                    </div>
+                </NSpace>
+            </div>
+        </NLayoutSider>
+    </NLayout>
 </template>
 
-
 <style scoped>
-/* Chat History Scrollbar */
-.chat-history {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
-}
-
-.chat-history::-webkit-scrollbar {
-    width: 6px;
-}
-
-.chat-history::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.chat-history::-webkit-scrollbar-thumb {
-    background: rgba(156, 163, 175, 0.5);
-    border-radius: 3px;
-}
-
-.chat-history::-webkit-scrollbar-thumb:hover {
-    background: rgba(156, 163, 175, 0.7);
-}
-
+/* Chat Styles */
 .chat-turn {
     display: flex;
     animation: slideIn 0.3s ease-out;
@@ -265,14 +413,6 @@ const sendRequest = async() => {
     line-height: 1.5;
 }
 
-.markdown-body :deep(p:first-child) {
-    margin-top: 0;
-}
-
-.markdown-body :deep(p:last-child) {
-    margin-bottom: 0;
-}
-
 .markdown-body :deep(h3) {
     font-size: 1.2em;
     font-weight: 600;
@@ -314,10 +454,6 @@ const sendRequest = async() => {
     padding-left: 1.5em;
 }
 
-.markdown-body :deep(li) {
-    margin: 0.2em 0;
-}
-
 .markdown-body :deep(table) {
     width: 100%;
     border-collapse: collapse;
@@ -354,38 +490,6 @@ const sendRequest = async() => {
     border-bottom-color: #6b7280;
 }
 
-.markdown-body :deep(tr:last-child td) {
-    border-bottom: none;
-}
-
-.markdown-body :deep(tr:nth-child(even)) {
-    background-color: #f9fafb;
-}
-
-:global(.dark) .markdown-body :deep(tr:nth-child(even)) {
-    background-color: #374151;
-}
-
-.markdown-body :deep(a) {
-    color: #2563eb;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s;
-}
-
-.markdown-body :deep(a:hover) {
-    color: #1d4ed8;
-    text-decoration: underline;
-}
-
-:global(.dark) .markdown-body :deep(a) {
-    color: #60a5fa;
-}
-
-:global(.dark) .markdown-body :deep(a:hover) {
-    color: #93c5fd;
-}
-
 .markdown-body :deep(code) {
     background-color: #f3f4f6;
     padding: 0.15em 0.35em;
@@ -397,21 +501,5 @@ const sendRequest = async() => {
 :global(.dark) .markdown-body :deep(code) {
     background-color: #374151;
     color: #f3f4f6;
-}
-
-.markdown-body :deep(pre) {
-    background-color: #1f2937;
-    color: #f3f4f6;
-    padding: 0.8em;
-    border-radius: 6px;
-    overflow-x: auto;
-    margin: 0.8em 0;
-    font-size: 0.85em;
-}
-
-.markdown-body :deep(pre code) {
-    background-color: transparent;
-    padding: 0;
-    color: inherit;
 }
 </style>

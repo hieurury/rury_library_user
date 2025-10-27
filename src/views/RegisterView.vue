@@ -45,8 +45,6 @@ onMounted(async () => {
     allPackages.value           =   await getAllPackages();
     currentListPackages.value   =   allPackages.value.data?.sort((a, b) => a.Gia - b.Gia);
     selectedPackage.value       =   currentListPackages.value[0]?.MaGoi || '';
-    console.log(currentListPackages.value);
-    console.log(selectedPackage.value);
 });
 
 //==========> Liên quan đến gói thành viên
@@ -177,7 +175,6 @@ function nextStep() {
 }
 
 const setCurrentStep = (to) => {
-    console.log(current.value, to);
     if(current.value > to) {
         currentRef.value = parseInt(to);
     }
@@ -292,7 +289,6 @@ const checkForm2 = () => {
             
             const response = await registerAccount(requestData);
             message[response.status](response.message);
-            console.log(response);
             if (response.status === "success") {
                 account.value = {...requestData, Goi: dataPackage }
                 nextStep();
@@ -304,14 +300,6 @@ const checkForm2 = () => {
 }
 
 //<==========  Liên quan đến đăng ký
-
-watch(form1Data, (newVal) => {
-    console.log(newVal);
-}, { deep: true });
-
-watch(form2Data, (newVal) => {
-    console.log(newVal);
-}, { deep: true });
 </script>
 
 

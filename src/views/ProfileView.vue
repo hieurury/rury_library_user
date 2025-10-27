@@ -107,7 +107,6 @@ onMounted(async () => {
                         return null;
                     }
                 } catch (error) {
-                    console.error(`Error fetching detail for ${borrow.MAPHIEU}:`, error);
                     return null;
                 }
             });
@@ -135,7 +134,7 @@ Số sách đã mượn: x
             short_response: true
         });
     } catch (error) {
-        console.error('Error in onMounted:', error);
+        // Silent error handling
     }
 })
 

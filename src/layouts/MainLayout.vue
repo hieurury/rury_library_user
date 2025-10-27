@@ -22,6 +22,7 @@ import {
 }                               from    '../hooks/useAccount';
 import { ref, computed, h } from 'vue';
 import { useRouter } from 'vue-router';
+import Footer from '../components/Footer.vue';
 
 const message = useMessage();
 const router = useRouter();
@@ -111,12 +112,12 @@ const handleDropdownSelect = (key) => {
                         Sách
                     </router-link>
                     <router-link 
-                        to="/about" 
+                        to="/test/ai" 
                         class="px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                         active-class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
                     >
-                        <NIcon class="mr-1"><i class="fa-solid fa-list"></i></NIcon>
-                        Danh mục
+                        <NIcon class="mr-1"><i class="fa-solid fa-robot"></i></NIcon>
+                        Thủ thư AI
                     </router-link>
                 </NSpace>
 
@@ -175,6 +176,8 @@ const handleDropdownSelect = (key) => {
     <main class="min-h-screen">
         <router-view />
     </main>
+
+    <Footer />
 </template>
 
 <style scoped>

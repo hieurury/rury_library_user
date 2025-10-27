@@ -6,7 +6,6 @@ const searchQuery = ref('');
 
 const handleSearch = () => {
   if (searchQuery.value.trim()) {
-    console.log('Searching for:', searchQuery.value);
     // TODO: Implement search logic here
   }
 };
