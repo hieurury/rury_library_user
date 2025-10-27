@@ -16,7 +16,6 @@ import {
     NStatistic,
     NImage,
     useMessage,
-    NSkeleton,
     NThing,
     NText,
     NBadge
@@ -24,12 +23,14 @@ import {
 import { ref, onMounted, h } from 'vue';
 import { useRouter } from 'vue-router';
 import Search           from '../components/Search.vue';
+import FavoriteButton   from '../components/FavoriteButton.vue';
 import {
   getCategories,
   getTopCategories
 }                       from '../services/apiCategories.js';
 import {
-  getTopBooks
+  getTopBooks,
+  getAllBooks  // ← THÊM: Import getAllBooks
 }                       from '../services/apiBook.js';
 const API_BASE = import.meta.env.VITE_API_BASE;
 const router = useRouter();
@@ -37,30 +38,61 @@ const message = useMessage();
 const allCategories = ref([]);
 const topCategories = ref([]);
 const topBooks = ref([]);
+const allBooks = ref([]); // ← THÊM: Tất cả sách (không cần lượt mượn)
 const loadingBooks = ref(false);
+const loadingCategories = ref(false);
+const loadingTopCategories = ref(false);
+const loadingAllBooks = ref(false); // ← THÊM: Loading cho all books
 
 
 
 onMounted(async () => {
+  console.log('HomeView mounted, API_BASE:', API_BASE);
   await getAllCategories();
   await getAllTopCategories();
   await getAllTopBooks();
+  await loadAllBooks(); // ← THÊM: Load tất cả sách
 });
 
 const getAllCategories = async () => {
+  loadingCategories.value = true;
   try {
     const response =  await getCategories();
-    allCategories.value = response.data;
+    // response = { status, message, data: [...categories] }
+    console.log('Categories response:', response);
+    if (response && response.data && Array.isArray(response.data)) {
+      allCategories.value = response.data;
+      console.log('All Categories loaded:', allCategories.value.length);
+    } else {
+      console.warn('Invalid categories response format:', response);
+      allCategories.value = [];
+    }
   } catch (error) {
+    console.error('Error loading categories:', error);
     message.error('Không thể tải danh mục thể loại.');
+    allCategories.value = [];
+  } finally {
+    loadingCategories.value = false;
   }
 }
 const getAllTopCategories = async () => {
+  loadingTopCategories.value = true;
   try {
     const response =  await getTopCategories();
-    topCategories.value = response.data;
+    console.log('Top Categories response:', response);
+    if (response && response.data && Array.isArray(response.data)) {
+      topCategories.value = response.data;
+      console.log('Top Categories loaded:', topCategories.value.length);
+    } else {
+      console.warn('Invalid top categories response format:', response);
+      topCategories.value = [];
+    }
   } catch (error) {
+    console.error('Error loading top categories:', error);
     message.error('Không thể tải top thể loại.');
+    topCategories.value = [];
+  } finally {
+    loadingTopCategories.value = false;
   }
 }
 
@@ -68,11 +100,41 @@ const getAllTopBooks = async () => {
   loadingBooks.value = true;
   try {
     const response = await getTopBooks();
-    topBooks.value = response.data;
+    console.log('Top Books response:', response);
+    if (response && response.data && Array.isArray(response.data)) {
+      topBooks.value = response.data;
+      console.log('Top Books loaded:', topBooks.value.length);
+    } else {
+      console.warn('Invalid top books response format:', response);
+      topBooks.value = [];
+    }
   } catch (error) {
+    console.error('Error loading top books:', error);
     message.error('Không thể tải top sách.');
+    topBooks.value = [];
   } finally {
     loadingBooks.value = false;
+  }
+}
+
+// ← THÊM: Hàm load tất cả sách
+const loadAllBooks = async () => {
+  loadingAllBooks.value = true;
+  try {
+    const response = await getAllBooks();
+    console.log('All Books response:', response);
+    if (response && response.data && Array.isArray(response.data)) {
+      allBooks.value = response.data;
+      console.log('All Books loaded:', allBooks.value.length);
+    } else {
+      console.warn('Invalid all books response format:', response);
+      allBooks.value = [];
+    }
+  } catch (error) {
+    console.error('Error loading all books:', error);
+    allBooks.value = [];
+  } finally {
+    loadingAllBooks.value = false;
   }
 }
 
@@ -81,18 +143,28 @@ const formatPrice = (price) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 }
 
+// ← SỬA: Dùng allBooks thay vì topBooks
 // Lấy sách theo thể loại từ dữ liệu đã có
 const getBooksByCategory = (categoryId) => {
-  if (!topBooks.value || topBooks.value.length === 0) return [];
+  if (!allBooks.value || !Array.isArray(allBooks.value) || allBooks.value.length === 0) {
+    console.log('No books available');
+    return [];
+  }
   
-  return topBooks.value
-    .filter(book => book.THELOAI && book.THELOAI.some(tl => tl.MaLoai === categoryId))
-    .slice(0, 4); // Lấy tối đa 4 cuốn
+  const books = allBooks.value.filter(book => {
+    return book.THELOAI && Array.isArray(book.THELOAI) && book.THELOAI.some(tl => tl.MaLoai === categoryId);
+  }).slice(0, 4); // Lấy tối đa 4 cuốn
+  
+  console.log(`Books for category ${categoryId}:`, books.length);
+  return books;
 }
 
 // Lấy 4 thể loại đầu tiên có sách
 const getFeaturedCategories = () => {
-  if (!allCategories.value || allCategories.value.length === 0) return [];
+  if (!allCategories.value || !Array.isArray(allCategories.value) || allCategories.value.length === 0) {
+    console.log('No categories available');
+    return [];
+  }
   
   // Lọc các thể loại có sách
   const categoriesWithBooks = allCategories.value.filter(category => {
@@ -100,8 +172,10 @@ const getFeaturedCategories = () => {
     return booksInCategory.length > 0;
   });
   
+  console.log('Featured categories:', categoriesWithBooks.length);
   return categoriesWithBooks.slice(0, 4);
 }
+
 </script>
 
 
@@ -151,7 +225,13 @@ const getFeaturedCategories = () => {
             </div>
         </NSpace>
         <!-- top categories -->
-        <NSpace vertical justify="center" align="center" class="py-12 w-full min-h-screen">
+        <NSpace 
+          v-if="!loadingTopCategories && topCategories && topCategories.length > 0"
+          vertical 
+          justify="center" 
+          align="center" 
+          class="py-12 w-full min-h-screen"
+        >
           <h1 class="text-3xl uppercase font-semibold my-4">Top thể loại được yêu thích nhất</h1>
           <p class="text-gray-500 dark:text-gray-400 mb-8">Dựa trên số lượt mượn sách</p>
           
@@ -182,8 +262,9 @@ const getFeaturedCategories = () => {
                   >
                     <NImage 
                       v-if="category.Icon"
-                      :src="`${API_BASE}/${category.Icon}`" 
-                      :alt="category.TenLoai" 
+                      :src="`${API_BASE}${category.Icon}`"
+                      :alt="category.TenLoai"
+                      class="w-16 h-16 object-contain"
                     />
                     <NIcon v-else size="48" color="white">
                       <i class="fa-solid fa-book"></i>
@@ -223,33 +304,22 @@ const getFeaturedCategories = () => {
                 </NSpace>
               </NCard>
             </NGi>
-
-            <!-- Hiển thị thông báo nếu không có dữ liệu -->
-            <NGi v-if="topCategories.length === 0" span="3">
-              <NGrid cols="3" class="w-full" x-gap="12" y-gap="12">
-                <NGi class="min-w-sm" v-for="value in 3" :key="value" span="1">
-                  <NSkeleton
-                    height="300px"
-                    width="100%"
-                  />
-                </NGi>
-              </NGrid>
-            </NGi>
           </NGrid>
         </NSpace>
         <!-- top books -->
-        <NSpace vertical justify="center" align="center" class="py-12 w-full min-h-screen bg-gradient-to-b from-transparent to-gray-50 dark:to-gray-900">
+        <NSpace 
+          v-if="!loadingBooks && topBooks && topBooks.length > 0"
+          vertical 
+          justify="center" 
+          align="center" 
+          class="py-12 w-full min-h-screen bg-gradient-to-b from-transparent to-gray-50 dark:to-gray-900"
+        >
           <h1 class="text-3xl uppercase font-semibold my-4">Top sách mượn nhiều nhất</h1>
           <p class="text-gray-500 dark:text-gray-400 mb-8">6 đầu sách được độc giả yêu thích</p>
           
           <NGrid cols="3" x-gap="24" y-gap="24" class="w-full px-8 max-w-7xl">
-            <!-- Loading skeleton -->
-            <NGi v-if="loadingBooks" v-for="n in 6" :key="`skeleton-${n}`" span="1">
-              <NSkeleton height="400px" width="100%" />
-            </NGi>
-
             <!-- Book cards -->
-            <NGi v-else v-for="book in topBooks" :key="book.MASACH" span="1">
+            <NGi v-for="book in topBooks" :key="book.MASACH" span="1">
               <NBadge processing>
                   <template #value>
                     <NIcon>
@@ -263,9 +333,9 @@ const getFeaturedCategories = () => {
                       <NGi span="1">
                         <NSpace align="center" class="h-full">
                           <NImage 
-                            :src="`${API_BASE}/${book.HINHANH}`" 
+                            :src="`${API_BASE}${book.HINHANH}`" 
                             :alt="book.TENSACH" 
-                            preview-src-list="[`${API_BASE}/${book.ANH_BIA}`]"
+                            :preview-src="`${API_BASE}${book.HINHANH}`"
                           />
                         </NSpace>
                       </NGi>
@@ -289,18 +359,6 @@ const getFeaturedCategories = () => {
                   </template>
                 </NThing>
               </NBadge>
-            </NGi>
-
-            <!-- Empty state -->
-            <NGi v-if="!loadingBooks && topBooks.length === 0" span="3">
-              <NGrid cols="3" class="w-full" x-gap="12" y-gap="12">
-                <NGi class="min-w-sm" v-for="value in 6" :key="value" span="1">
-                  <NSkeleton
-                    height="300px"
-                    width="100%"
-                  />
-                </NGi>
-              </NGrid>
             </NGi>
           </NGrid>
         </NSpace>
@@ -339,9 +397,10 @@ const getFeaturedCategories = () => {
                     >
                       <NImage 
                         v-if="category.Icon"
-                        :src="`${API_BASE}/${category.Icon}`"
+                        :src="`${API_BASE}${category.Icon}`"
                         :alt="category.TenLoai"
                         width="32"
+                        class="object-contain"
                       />
                       <NIcon v-else size="24" color="white">
                         <i class="fa-solid fa-book"></i>
@@ -391,7 +450,7 @@ const getFeaturedCategories = () => {
                       <!-- Book Image - 2 cột -->
                       <NGi span="2" class="relative">
                         <div 
-                          :style="`background-image: url(${API_BASE}/${book.HINHANH});`" 
+                          :style="`background-image: url(${API_BASE}${book.HINHANH});`" 
                           class="bg-no-repeat bg-center bg-contain min-h-[140px] rounded-md"
                         ></div>
                       </NGi>
@@ -421,6 +480,12 @@ const getFeaturedCategories = () => {
                               <i class="fa-solid fa-tag mr-1"></i>
                               {{ formatPrice(book.DONGIA || book.GIABAN || 0) }}
                             </NTag>
+                            
+                            <!-- Action Buttons -->
+                            <NDivider class="!my-2" />
+                            <NSpace :size="4">
+                              <FavoriteButton :book-id="book.MASACH" size="tiny" circle />
+                            </NSpace>
                           </template>
                         </NThing>
                       </NGi>
@@ -445,18 +510,6 @@ const getFeaturedCategories = () => {
                 </NGi> -->
               </NGrid>
             </div>
-
-            <!-- Empty state nếu không có thể loại nào -->
-            <NCard v-if="getFeaturedCategories().length === 0" class="text-center">
-              <NGrid cols="4" class="w-full" x-gap="12" y-gap="12">
-                <NGi class="min-w-sm" v-for="value in 4" :key="value" span="1">
-                  <NSkeleton
-                    height="300px"
-                    width="100%"
-                  />
-                </NGi>
-              </NGrid>
-            </NCard>
           </NSpace>
         </NSpace>
     </NSpace>

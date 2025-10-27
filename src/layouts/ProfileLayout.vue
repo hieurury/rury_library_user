@@ -1,46 +1,108 @@
-<script setup>
+﻿<script setup>
 import {
     NLayout,
     NLayoutHeader,
     NLayoutContent,
-    NLayoutFooter,
     NLayoutSider,
     NSpace,
-    NSwitch
-}                            from    'naive-ui';
-import {
-    isDark
-}                            from    '../hooks/useDark';
+    NSwitch,
+    NButton,
+    NIcon,
+    NAvatar,
+    NGradientText,
+    NDropdown,
+    useMessage
+} from 'naive-ui';
+import { isDark } from '../hooks/useDark';
+import { getAccountData, removeAccountData } from '../hooks/useAccount';
+import { ref, h } from 'vue';
+import { useRouter } from 'vue-router';
+import BagButton from '../components/BagButton.vue';
+import ProfileSidebar from '../components/ProfileSidebar.vue';
+
+const router = useRouter();
+const message = useMessage();
+const accountData = ref(getAccountData());
+
+const renderIcon = (iconClass) => {
+  return () => h(NIcon, null, { default: () => h('i', { class: iconClass }) });
+};
+
+const userDropdownOptions = [
+  { label: 'Trang chủ', key: 'home', icon: renderIcon('fa-solid fa-home') },
+  { label: 'Thủ thư AI', key: 'ai', icon: renderIcon('fa-solid fa-robot') },
+  { type: 'divider', key: 'd1' },
+  { label: 'Đăng xuất', key: 'logout', icon: renderIcon('fa-solid fa-right-from-bracket') }
+];
+
+const handleDropdownSelect = (key) => {
+  if (key === 'home') {
+    router.push('/');
+  } else if (key === 'ai') {
+    router.push('/test/ai');
+  } else if (key === 'logout') {
+    removeAccountData();
+    message.success('Đăng xuất thành công');
+    router.push('/auth/login');
+  }
+};
 </script>
 
-
 <template>
-    <div>
-        <NLayout>
-            <NLayoutHeader bordered>
-                <NSpace justify="space-between" class="p-4">
-                    <NSpace>
-                        <h2 class="dark:text-white text-black text-2xl uppercase font-semibold">Profile</h2>
-                    </NSpace>
-                    <NSpace>
-                        <NSwitch v-model:value="isDark">
-                            <template #icon>
-                                <i v-if="!isDark"class="fa-solid fa-sun"></i>
-                                <i v-if="isDark"class="fa-solid fa-moon"></i>
-                            </template>
-                        </NSwitch>
-                    </NSpace>
+    <NLayout>
+        <NLayoutHeader bordered class="bg-white dark:bg-gray-900">
+            <NSpace justify="space-between" class="p-4">
+                <NSpace align="center">
+                    <RouterLink to="/" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                        <NAvatar round size="medium" src="/logo-nobg.png" />
+                        <NGradientText type="warning" class="text-xl font-bold">RuryLib</NGradientText>
+                    </RouterLink>
+                    <span class="text-gray-400">|</span>
+                    <h2 class="dark:text-white text-black text-xl uppercase font-semibold">Trang cá nhân</h2>
                 </NSpace>
-            </NLayoutHeader>
+                <NSpace align="center" :size="16">
+                    <BagButton />
+                    <NButton text size="large" @click="router.push('/')" class="hidden md:flex">
+                        <template #icon><NIcon><i class="fa-solid fa-home"></i></NIcon></template>
+                        Trang chủ
+                    </NButton>
+                    <NButton text size="large" @click="router.push('/test/ai')" class="hidden md:flex">
+                        <template #icon><NIcon><i class="fa-solid fa-robot"></i></NIcon></template>
+                        Thủ thư AI
+                    </NButton>
+                    <NSwitch v-model:value="isDark" size="large">
+                        <template #checked-icon><NIcon><i class="fa-solid fa-sun"></i></NIcon></template>
+                        <template #unchecked-icon><NIcon><i class="fa-solid fa-moon"></i></NIcon></template>
+                    </NSwitch>
+                    <NDropdown :options="userDropdownOptions" @select="handleDropdownSelect" trigger="click">
+                        <NButton type="primary" size="large">
+                            <template #icon><NIcon><i class="fa-solid fa-user"></i></NIcon></template>
+                            {{ accountData?.TEN || 'Tài khoản' }}
+                            <template #icon-after><NIcon><i class="fa-solid fa-chevron-down"></i></NIcon></template>
+                        </NButton>
+                    </NDropdown>
+                </NSpace>
+            </NSpace>
+        </NLayoutHeader>
+        <NLayout has-sider>
+            <NLayoutSider 
+                bordered 
+                collapse-mode="transform" 
+                :collapsed-width="120" 
+                :width="280" 
+                show-trigger="arrow-circle"
+            >
+                <ProfileSidebar />
+            </NLayoutSider>
             <NLayoutContent>
-                <router-view />
+                <router-view></router-view>
             </NLayoutContent>
-            <NLayoutFooter></NLayoutFooter>
         </NLayout>
-    </div>
+    </NLayout>
 </template>
 
-
 <style scoped>
-
+a { text-decoration: none; color: inherit; }
+header { border-bottom: 1px solid rgba(229, 231, 235, 0.5); }
+:global(.dark) header { border-bottom-color: rgba(75, 85, 99, 0.3); }
 </style>

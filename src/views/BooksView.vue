@@ -354,7 +354,7 @@ watch([searchQuery, selectedCategory, selectedYearRange, priceRange, borrowRange
                               <span class="ml-0.5">{{ getBorrowCount(book.MASACH) }}</span>
                           </template>
                           <NImage
-                            :src="`${API_BASE}/${book.HINHANH}`"
+                            :src="`${API_BASE}${book.HINHANH}`"
                             :alt="book.TENSACH"
                             class="rounded-md"
                             object-fit="cover"

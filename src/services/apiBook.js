@@ -26,6 +26,19 @@ const getBookById = async (bookId) => {
 const getTopBooks = async () => {
     try {
         const url = `${API_BASE}/sach/top-books`;
+        console.log('Fetching top books from:', url);
+        const response = await axios.get(url);
+        console.log('Top books response:', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('API Error (getTopBooks):', error);
+        throw error;
+    }
+};
+
+const getAvailableCopies = async (bookId) => {
+    try {
+        const url = `${API_BASE}/sach/copies/${bookId}`;
         const response = await axios.get(url);
         return response.data;
     } catch (error) {
@@ -36,5 +49,6 @@ const getTopBooks = async () => {
 export {
     getAllBooks,
     getBookById,
-    getTopBooks
+    getTopBooks,
+    getAvailableCopies
 };

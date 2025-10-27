@@ -23,6 +23,7 @@ import {
 import { ref, computed, h } from 'vue';
 import { useRouter } from 'vue-router';
 import Footer from '../components/Footer.vue';
+import BagButton from '../components/BagButton.vue';
 
 const message = useMessage();
 const router = useRouter();
@@ -123,6 +124,8 @@ const handleDropdownSelect = (key) => {
 
                 <!-- Right Side Actions -->
                 <NSpace align="center" :size="12">
+                    <!-- Bag Button - Only show if logged in -->
+                    <BagButton v-if="isLoggedIn" />
                     
                     <!-- User Dropdown if logged in -->
                     <NDropdown 

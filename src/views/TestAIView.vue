@@ -120,23 +120,13 @@ const clearHistory = () => {
     <NLayout has-sider class="min-h-screen">
         <!-- Content - Chat Area -->
         <NLayoutContent class="bg-gradient-to-b from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800">
-            <div class="h-full flex flex-col p-6 max-w-4xl mx-auto">
-                <!-- Header -->
-                <div class="text-center mb-6">
-                    <NAvatar round src="/AI-logo.png" :size="80" class="mb-3" />
-                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-100 mb-1">
-                        Thủ Thư Mọt
-                    </h1>
-                    <p class="text-sm md:text-base text-gray-600 dark:text-gray-400">
-                        Trợ lý AI chuyên về sách và thư viện
-                    </p>
-                </div>
+            <div class="h-full flex flex-col p-6 ">
 
                 <!-- Chat Container -->
                 <NCard class="flex-1 shadow-lg flex flex-col" :segmented="{ content: true, footer: 'soft' }">
                     <!-- Chat History -->
-                    <NScrollbar ref="chatHistoryRef" class="flex-1" style="max-height: calc(100vh - 400px);">
-                        <div class="p-4 bg-white dark:bg-gray-800">
+                    <NScrollbar ref="chatHistoryRef" class="flex-1">
+                        <div class="p-4 bg-white dark:bg-gray-800 min-h-[50%]">
                             <!-- Welcome Message -->
                             <div v-if="history.length === 0" class="flex flex-col items-center justify-center py-12">
                                 <NAvatar round src="/AI-logo.png" :size="70" class="mb-3" />

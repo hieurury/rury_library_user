@@ -40,4 +40,56 @@ const getUserInfo = async (id) => {
     }
 }
 
-export { registerAccount, loginccount, getUserInfo };
+const addFavorite = async (MADOCGIA, MASACH) => {
+    try {
+        const url = `${API_BASE}/user/favorites/add`;
+        const response = await axios.post(url, 
+            { MADOCGIA, MASACH },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const removeFavorite = async (MADOCGIA, MASACH) => {
+    try {
+        const url = `${API_BASE}/user/favorites/remove`;
+        const response = await axios.post(url, 
+            { MADOCGIA, MASACH },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Đếm số sách đang mượn (TINHTRANG = 'borrowing')
+const getBorrowingCount = async (MADOCGIA) => {
+    try {
+        const url = `${API_BASE}/user/borrowing-count/${MADOCGIA}`;
+        const response = await axios.get(url, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export { registerAccount, loginccount, getUserInfo, addFavorite, removeFavorite, getBorrowingCount };
