@@ -9,14 +9,10 @@ import {
     NTag,
     NText,
     NDivider,
-    NRadioGroup,
-    NRadio,
-    NResult,
-    NSpin,
-    useMessage,
-    NModal,
     NDescriptions,
-    NDescriptionsItem
+    NDescriptionsItem,
+    NSpin,
+    useMessage
 } from 'naive-ui';
 import { useRouter } from 'vue-router';
 import { getSelectedBagItems, clearBag, clearSelectedBagItems } from '../hooks/useBag';
@@ -35,8 +31,7 @@ const submitting = ref(false);
 const booksDetail = ref([]); // Chỉ chứa sách được chọn từ BagDrawer
 const userInfo = ref(null);
 const currentBorrowingCount = ref(0);
-const paymentMethod = ref('cash'); // 'cash' or 'online'
-const showSuccessModal = ref(false);
+const paymentMethod = ref('online'); // Chỉ còn 'online' (VNPAY)
 const billData = ref(null);
 
 // Computed
@@ -155,43 +150,26 @@ const handleSubmit = async () => {
         
         billData.value = response.data;
         
-        if (paymentMethod.value === 'online') {
-            // VNPAY: Kiểm tra xem có paymentUrl không
-            if (response.data.paymentUrl) {
-                // Clear bag và selection trước khi redirect
-                clearBag();
-                clearSelectedBagItems();
-                // Redirect đến VNPAY
-                window.location.href = response.data.paymentUrl;
-            } else {
-                // Chưa có VNPAY key
-                message.error('Chức năng thanh toán VNPAY chưa được kích hoạt. Vui lòng chọn thanh toán tiền mặt');
-                submitting.value = false;
-                return;
-            }
-        } else {
-            // Cash payment - show success modal
-            showSuccessModal.value = true;
-            // Clear bag và selection
+        // Chỉ còn VNPAY - Kiểm tra xem có paymentUrl không
+        if (response.data.paymentUrl) {
+            // Clear bag và selection trước khi redirect
             clearBag();
             clearSelectedBagItems();
+            // Redirect đến VNPAY
+            window.location.href = response.data.paymentUrl;
+        } else {
+            // Chưa có VNPAY key
+            message.error('Chức năng thanh toán VNPAY chưa được kích hoạt');
+            submitting.value = false;
+            return;
         }
         
     } catch (error) {
         console.error(error);
         const errorMsg = error.response?.data?.message || 'Không thể tạo phiếu mượn';
         message.error(errorMsg);
-    } finally {
-        if (paymentMethod.value === 'cash') {
-            submitting.value = false;
-        }
-        // Nếu online thì không set false vì đang redirect
+        submitting.value = false;
     }
-};
-
-const handleCloseModal = () => {
-    showSuccessModal.value = false;
-    router.push('/user/profile/history');
 };
 
 const formatPrice = (price) => {
@@ -335,33 +313,23 @@ const formatPrice = (price) => {
 
                                 <!-- Payment Method -->
                                 <NCard title="Phương thức thanh toán" :bordered="true">
-                                    <NRadioGroup v-model:value="paymentMethod">
-                                        <NSpace vertical>
-                                            <NRadio value="cash">
-                                                <NSpace align="center">
-                                                    <NIcon size="20"><i class="fa-solid fa-money-bill"></i></NIcon>
-                                                    <div>
-                                                        <div class="font-semibold">Tiền mặt</div>
-                                                        <NText depth="3" class="text-xs">
-                                                            Đến quầy thủ thư để nhận sách và thanh toán
-                                                        </NText>
-                                                    </div>
-                                                </NSpace>
-                                            </NRadio>
-                                            <NDivider class="!my-2" />
-                                            <NRadio value="online">
-                                                <NSpace align="center">
-                                                    <NIcon size="20"><i class="fa-solid fa-credit-card"></i></NIcon>
-                                                    <div>
-                                                        <div class="font-semibold">Chuyển khoản VNPAY</div>
-                                                        <NText depth="3" class="text-xs">
-                                                            Thanh toán trực tuyến, chỉ cần đến quầy lấy sách
-                                                        </NText>
-                                                    </div>
-                                                </NSpace>
-                                            </NRadio>
+                                    <NSpace vertical :size="12">
+                                        <NSpace align="center">
+                                            <NIcon size="24" color="#0088cc">
+                                                <i class="fa-solid fa-credit-card"></i>
+                                            </NIcon>
+                                            <div>
+                                                <div class="font-semibold text-lg">Chuyển khoản VNPAY</div>
+                                                <NText depth="3" class="text-sm">
+                                                    Thanh toán trực tuyến an toàn
+                                                </NText>
+                                            </div>
                                         </NSpace>
-                                    </NRadioGroup>
+                                        <NDivider class="!my-2" />
+                                        <NText depth="3" class="text-xs">
+                                            💡 Sau khi thanh toán thành công, vui lòng đến quầy thư viện để nhận sách
+                                        </NText>
+                                    </NSpace>
                                 </NCard>
 
                                 <!-- Total -->
@@ -389,9 +357,9 @@ const formatPrice = (price) => {
                                             @click="handleSubmit"
                                         >
                                             <template #icon>
-                                                <NIcon><i class="fa-solid fa-check"></i></NIcon>
+                                                <NIcon><i class="fa-solid fa-credit-card"></i></NIcon>
                                             </template>
-                                            {{ paymentMethod === 'cash' ? 'Xác nhận mượn' : 'Thanh toán VNPAY' }}
+                                            Thanh toán VNPAY
                                         </NButton>
                                         <NText v-if="!canProceed" type="error" class="text-xs text-center">
                                             Vượt quá giới hạn! Bạn chỉ còn có thể mượn thêm {{ remainingSlots }} cuốn
@@ -414,42 +382,5 @@ const formatPrice = (price) => {
                 </template>
             </NSpace>
         </div>
-
-        <!-- Success Modal -->
-        <NModal v-model:show="showSuccessModal" preset="card" title="Thành công!" :bordered="false" class="max-w-md">
-            <NResult status="success" title="Tạo phiếu mượn thành công!">
-                <template #footer>
-                    <NSpace vertical :size="12">
-                        <NDescriptions label-placement="left" :column="1" size="small" bordered>
-                            <NDescriptionsItem label="Mã Bill">
-                                <NTag type="info">{{ billData?.bill?.MABILL }}</NTag>
-                            </NDescriptionsItem>
-                            <NDescriptionsItem label="Số sách">
-                                {{ billData?.bill?.DANHSACHPHIEU?.length }} cuốn
-                            </NDescriptionsItem>
-                            <NDescriptionsItem label="Tổng tiền">
-                                <NText strong class="text-orange-500">
-                                    {{ formatPrice(billData?.bill?.TONGTIEN || 0) }}
-                                </NText>
-                            </NDescriptionsItem>
-                            <NDescriptionsItem label="Thanh toán">
-                                {{ paymentMethod === 'cash' ? 'Tiền mặt tại quầy' : 'VNPAY' }}
-                            </NDescriptionsItem>
-                        </NDescriptions>
-                        
-                        <NText depth="3" class="text-sm text-center">
-                            {{ paymentMethod === 'cash' 
-                                ? 'Vui lòng đến quầy thủ thư để nhận sách và thanh toán' 
-                                : 'Vui lòng đến quầy thủ thư để nhận sách' 
-                            }}
-                        </NText>
-                        
-                        <NButton type="primary" block @click="handleCloseModal">
-                            Xem lịch sử mượn
-                        </NButton>
-                    </NSpace>
-                </template>
-            </NResult>
-        </NModal>
     </div>
 </template>

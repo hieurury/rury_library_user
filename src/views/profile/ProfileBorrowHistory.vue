@@ -131,7 +131,11 @@ const columns = [
         width: 100,
         align: 'center',
         render(row) {
-            return row.DANHSACHPHIEU?.length || 0;
+            return h(
+                NTag,
+                { type: 'info', size: 'small' },
+                { default: () => `${row.DANHSACHPHIEU?.length || 0} cuốn` }
+            );
         }
     },
     {
@@ -154,11 +158,11 @@ const columns = [
             return h(
                 NTag,
                 {
-                    type: row.LOAITHANHTOAN === 'cash' ? 'warning' : 'success',
+                    type: 'success',
                     size: 'small'
                 },
                 {
-                    default: () => row.LOAITHANHTOAN === 'cash' ? 'Tiền mặt' : 'VNPAY'
+                    default: () => 'VNPAY'
                 }
             );
         }
@@ -171,11 +175,11 @@ const columns = [
             return h(
                 NTag,
                 {
-                    type: row.TRANGTHAI ? 'success' : 'error',
+                    type: 'success',
                     size: 'small'
                 },
                 {
-                    default: () => row.TRANGTHAI ? 'Đã thanh toán' : 'Chưa thanh toán'
+                    default: () => '✅ Đã thanh toán'
                 }
             );
         }
@@ -280,13 +284,13 @@ const columns = [
                                 {{ formatDate(selectedBill.NGAYLAP) }}
                             </NDescriptionsItem>
                             <NDescriptionsItem label="Phương thức">
-                                <NTag :type="selectedBill.LOAITHANHTOAN === 'cash' ? 'warning' : 'success'">
-                                    {{ selectedBill.LOAITHANHTOAN === 'cash' ? 'Tiền mặt' : 'VNPAY' }}
+                                <NTag type="success">
+                                    VNPAY
                                 </NTag>
                             </NDescriptionsItem>
                             <NDescriptionsItem label="Trạng thái">
-                                <NTag :type="selectedBill.TRANGTHAI ? 'success' : 'error'">
-                                    {{ selectedBill.TRANGTHAI ? 'Đã thanh toán' : 'Chưa thanh toán' }}
+                                <NTag type="success">
+                                    ✅ Đã thanh toán
                                 </NTag>
                             </NDescriptionsItem>
                             <NDescriptionsItem v-if="selectedBill.NGAYTHANHTOAN" label="Ngày thanh toán">
@@ -305,7 +309,8 @@ const columns = [
 
                     <!-- Books List -->
                     <NCard title="Danh sách sách" :bordered="true" size="small">
-                        <NSpace vertical :size="12">
+                        <!-- Hiển thị phiếu mượn -->
+                        <NSpace v-if="selectedBill.PHIEUMUON && selectedBill.PHIEUMUON.length > 0" vertical :size="12">
                             <div
                                 v-for="phieu in selectedBill.PHIEUMUON"
                                 :key="phieu.MAPHIEU"
@@ -355,14 +360,12 @@ const columns = [
                                     </NGi>
                                 </NGrid>
                             </div>
-
-                            <div v-if="!selectedBill.PHIEUMUON || selectedBill.PHIEUMUON.length === 0">
-                                <NEmpty description="Chưa có phiếu mượn nào" size="small" />
-                                <p class="text-xs text-center text-gray-500 mt-2">
-                                    (Bill chờ thanh toán VNPAY)
-                                </p>
-                            </div>
                         </NSpace>
+
+                        <!-- Empty state -->
+                        <div v-else>
+                            <NEmpty description="Chưa có sách nào" size="small" />
+                        </div>
                     </NCard>
                 </NSpace>
             </NDrawerContent>
@@ -374,6 +377,7 @@ const columns = [
 .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
