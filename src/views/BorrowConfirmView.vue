@@ -147,34 +147,20 @@ const handleSubmit = async () => {
             LIST_MA_BANSAO,
             paymentMethod.value
         );
-        
-        console.log('✅ Bill API Response:', response);
-        console.log('✅ Response data:', response?.data);
-        console.log('✅ Payment URL:', response?.data?.paymentUrl);
-        
         billData.value = response;
         
         // Chỉ còn VNPAY - Kiểm tra xem có paymentUrl không
         // apiBill.js return response.data, nên response chính là data từ server
         // Server trả về: { status, message, data: { bill, paymentUrl, ... } }
-        const paymentUrl = response?.data?.paymentUrl || response?.paymentUrl;
+        const paymentUrl = response?.paymentUrl;
         
-        if (paymentUrl) {
-            // Clear bag và selection trước khi redirect
-            clearBag();
-            clearSelectedBagItems();
-            // Redirect đến VNPAY
-            console.log('🔗 Redirecting to VNPay:', paymentUrl);
-            window.location.href = paymentUrl;
-        } else {
-            // Chưa có VNPAY key hoặc lỗi server
-            console.error('❌ No payment URL in response');
-            console.error('Full response:', JSON.stringify(response, null, 2));
-            message.error('Chức năng thanh toán VNPAY chưa được kích hoạt hoặc có lỗi xảy ra');
+        if(!paymentUrl) {
+            message.error('Có lỗi xảy ra trong quá trình xử lý thanh toán VNPAY');
             submitting.value = false;
             return;
         }
-        
+        console.log(paymentUrl);
+        return;
     } catch (error) {
         console.error('❌ Error creating bill:', error);
         console.error('Error response:', error.response?.data);

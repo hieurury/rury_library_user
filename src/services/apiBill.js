@@ -5,7 +5,7 @@ const API_BASE = import.meta.env.VITE_API_BASE;
 
 const createBill = async (MADOCGIA, LIST_MA_BANSAO, LOAITHANHTOAN) => {
     try {
-        const url = `${API_BASE}/bill/create`;
+        const url = `${API_BASE}/bill/checkBill`;
         const response = await axios.post(url, 
             { MADOCGIA, LIST_MA_BANSAO, LOAITHANHTOAN },
             {
