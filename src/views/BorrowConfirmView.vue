@@ -160,7 +160,8 @@ const handleSubmit = async () => {
             return;
         }
         console.log(paymentUrl);
-        return;
+        // Chuyển hướng đến URL thanh toán VNPAY
+        window.location.href = paymentUrl;
     } catch (error) {
         console.error('❌ Error creating bill:', error);
         console.error('Error response:', error.response?.data);
