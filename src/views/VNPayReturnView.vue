@@ -10,134 +10,118 @@ import {
     NDescriptions,
     NDescriptionsItem,
     NTag,
-    NSpin
+    NSpin,
+    useMessage,
+    NHighlight
 } from 'naive-ui';
+import {
+    createBill
+} from '../services/apiBill';
+import {
+    getBookIds,
+    clearBookIds
+} from '../hooks/usePayment';
+import {
+    clearSelectedBagItems
+} from '../hooks/useBag';
+import {
+    getAccountData
+} from '../hooks/useAccount';
+
+
+const message = useMessage();
 
 const route = useRoute();
 const router = useRouter();
 
+const status = ref('');
+const resultMessage = ref('');
+const resultContent = ref('');
+const resultStatus = ref('');
+const billStatus = ref('');
 const loading = ref(true);
-const status = ref(''); // 'success', 'failed', 'error'
-const message = ref('');
-const billId = ref('');
 
-onMounted(() => {
+const solveRespone = (responseCode) => {
+    const errorCode = {
+        '00': {
+            status: 'success',
+            message: 'Giao dịch thành công',
+            content: 'RuryLib cảm ơn quý khách đã mượn sách tại thư viện.'
+        },
+        '51': {
+            status: 'error',
+            message: 'Số dư không đủ',
+            content: 'Vui lòng kiểm tra số dư tài khoản và thử lại.'
+        },
+        '24': {
+            status: 'error',
+            message: 'Giao dịch bị hủy',
+            content: 'Vui lòng thử lại hoặc liên hệ hỗ trợ.'
+        },
+    }
+    message[errorCode[responseCode].status](errorCode[responseCode].message);
+    resultMessage.value = errorCode[responseCode].message;
+    resultContent.value = errorCode[responseCode].content;
+    resultStatus.value = errorCode[responseCode].status;
+
+}
+
+onMounted(async () => {
     // Lấy params từ URL
-    status.value = route.query.status || 'error';
-    message.value = decodeURIComponent(route.query.message || '');
-    billId.value = route.query.billId || '';
-    
-    loading.value = false;
+    status.value = route.query.vnp_ResponseCode;
+    console.log(status.value, message.value);
+    solveRespone(status.value);
+
+    //xử lí tạo bill
+    if(resultStatus.value === 'success') {
+        const accountData = getAccountData();
+        const MADOCGIA = accountData.MADOCGIA;
+        const LIST_MA_BANSAO = getBookIds();
+        const LOAITHANHTOAN = 'online';
+        loading.value = true;
+        const response = await createBill(
+            MADOCGIA,
+            LIST_MA_BANSAO,
+            LOAITHANHTOAN
+        );
+        console.log(response);
+        loading.value = false;
+        if(response.status === 'success') {
+            billStatus.value = 'success';
+            clearBookIds();
+            //xoá các sách đã chọn khỏi giỏ
+            clearSelectedBagItems(LIST_MA_BANSAO);
+        } else {
+            billStatus.value = 'error';
+        }
+    } else {
+        loading.value = false;
+    }
+
 });
 
-const handleGoToHistory = () => {
-    router.push('/user/profile/history');
-};
-
-const handleGoHome = () => {
-    router.push('/');
-};
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
-        <div class="max-w-2xl w-full">
-            <div v-if="loading" class="flex justify-center">
-                <NSpin size="large" />
-            </div>
-
-            <NCard v-else :bordered="false" class="shadow-lg">
-                <!-- Success -->
+    <NSpace justify="center" align="center" direction="vertical" style="width: 100%; height: 100vh;">
+        <NCard :title="status === '00' ? '✅ Thanh toán thành công' : '❌ Thanh toán thất bại'" style="width: 600px; margin: auto; margin-top: 50px;">
+            <NSpin :show="loading">
                 <NResult
-                    v-if="status === 'success'"
-                    status="success"
-                    title="Thanh toán thành công!"
-                    description="Giao dịch của bạn đã được xử lý thành công"
+                    :status="resultStatus || 'info'"
+                    :title="resultMessage"
                 >
-                    <template #footer>
-                        <NSpace vertical :size="16">
-                            <NDescriptions label-placement="left" :column="1" bordered>
-                                <NDescriptionsItem label="Mã bill">
-                                    <NTag type="info">{{ billId }}</NTag>
-                                </NDescriptionsItem>
-                                <NDescriptionsItem label="Trạng thái">
-                                    <NTag type="success">Đã thanh toán</NTag>
-                                </NDescriptionsItem>
-                            </NDescriptions>
-
-                            <NSpace justify="center" :size="12">
-                                <NButton type="primary" size="large" @click="handleGoToHistory">
-                                    <template #icon>
-                                        <NIcon><i class="fa-solid fa-clock-rotate-left"></i></NIcon>
-                                    </template>
-                                    Xem lịch sử mượn
-                                </NButton>
-                                <NButton size="large" @click="handleGoHome">
-                                    <template #icon>
-                                        <NIcon><i class="fa-solid fa-home"></i></NIcon>
-                                    </template>
-                                    Về trang chủ
-                                </NButton>
-                            </NSpace>
-
-                            <div class="text-center text-sm text-gray-600 dark:text-gray-400">
-                                Vui lòng đến quầy thủ thư để nhận sách
+                    <template #default>
+                        <NSpace vertical size="large" justify="center" align="center">
+                            <div v-if="resultStatus === 'success'" class="bg-slate-300 p-2 border-l-2 border-orange-500 text-gray-700 italic">
+                                Quý khách vui lòng đến nhận sách trong vòng <span class="font-bold text-blue-500">3 ngày</span> kể từ ngày thanh toán <br>
+                                Nếu vượt quá thời gian, Thư viện sẽ huỷ đơn mượn. Số tiền sẽ không được hoàn trả! <br>
                             </div>
+                            <div>{{ resultContent }}</div>
+                            <NButton type="primary" @click="router.push('/')">Quay về trang chủ</NButton>
                         </NSpace>
                     </template>
                 </NResult>
-
-                <!-- Failed -->
-                <NResult
-                    v-else-if="status === 'failed'"
-                    status="error"
-                    title="Thanh toán thất bại"
-                    :description="message || 'Giao dịch không thành công. Bill đã bị hủy.'"
-                >
-                    <template #footer>
-                        <NSpace vertical :size="16">
-                            <div class="text-center text-gray-600 dark:text-gray-400">
-                                <p class="mb-2">Thanh toán không thành công, giao dịch đã bị hủy.</p>
-                                <p class="text-sm">Các sách trong balo vẫn được giữ nguyên, bạn có thể thử lại.</p>
-                            </div>
-
-                            <NSpace justify="center" :size="12">
-                                <NButton type="primary" size="large" @click="router.push('/borrow/confirm')">
-                                    <template #icon>
-                                        <NIcon><i class="fa-solid fa-rotate-right"></i></NIcon>
-                                    </template>
-                                    Thử lại thanh toán
-                                </NButton>
-                                <NButton size="large" @click="handleGoHome">
-                                    <template #icon>
-                                        <NIcon><i class="fa-solid fa-home"></i></NIcon>
-                                    </template>
-                                    Về trang chủ
-                                </NButton>
-                            </NSpace>
-                        </NSpace>
-                    </template>
-                </NResult>
-
-                <!-- Error -->
-                <NResult
-                    v-else
-                    status="500"
-                    title="Lỗi hệ thống"
-                    description="Đã có lỗi xảy ra trong quá trình xử lý thanh toán"
-                >
-                    <template #footer>
-                        <NSpace justify="center">
-                            <NButton type="primary" @click="handleGoHome">
-                                <template #icon>
-                                    <NIcon><i class="fa-solid fa-home"></i></NIcon>
-                                </template>
-                                Về trang chủ
-                            </NButton>
-                        </NSpace>
-                    </template>
-                </NResult>
-            </NCard>
-        </div>
-    </div>
+            </NSpin>
+        </NCard>
+    </NSpace>
 </template>

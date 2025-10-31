@@ -5,7 +5,7 @@ const API_BASE = import.meta.env.VITE_API_BASE;
 
 const getBorrowWithUserId = async (userId) => {
   try {
-    const url = `${API_BASE}/theo-doi-muon-sach/user/${userId}`;
+    const url = `${API_BASE}/borrow/user/${userId}`;
     const response = await axios.get(url);
     return response.data;
   } catch (error) {
@@ -15,7 +15,7 @@ const getBorrowWithUserId = async (userId) => {
 
 const getBorrowInfo = async (borrowId) => {
   try {
-    const url = `${API_BASE}/theo-doi-muon-sach/${borrowId}`;
+    const url = `${API_BASE}/borrow/${borrowId}`;
     const response = await axios.get(url);
     return response.data;
   } catch (error) {
@@ -25,7 +25,7 @@ const getBorrowInfo = async (borrowId) => {
 
 const getAllBorrowsInfo = async () => {
   try {
-    const url = `${API_BASE}/theo-doi-muon-sach/all`;
+    const url = `${API_BASE}/borrow/all`;
     const response = await axios.get(url);
     return response.data;
   } catch (error) {

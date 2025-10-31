@@ -96,6 +96,11 @@ const clearBalo = () => {
     saveBaloToStorage([]);
 };
 
+const clearSelectdFromBalo = (selectedIds) => {
+    baloItems.value = baloItems.value.filter(id => !selectedIds.includes(id));
+    saveBaloToStorage(baloItems.value);
+}
+
 /**
  * Get count of items in balo
  * @returns {Number} Count of items

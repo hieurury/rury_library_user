@@ -74,6 +74,7 @@ onMounted(async () => {
 
         // Lấy tất cả thông tin mượn trả của user
         const borrowsRes = await getBorrowWithUserId(userData.MADOCGIA);
+        console.log(borrowsRes);
         allBorrows.value = borrowsRes.data || [];
 
         // Lấy chi tiết từng sách mượn - sử dụng Promise.all để chờ tất cả

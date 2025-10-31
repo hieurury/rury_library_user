@@ -3,7 +3,8 @@ import { getToken } from '../hooks/useAccount';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
-const createBill = async (MADOCGIA, LIST_MA_BANSAO, LOAITHANHTOAN) => {
+// checkBill sẽ tạo bill + phiếu mượn (waiting) + lock sách + trả về payment URL
+const checkBill = async (MADOCGIA, LIST_MA_BANSAO, LOAITHANHTOAN) => {
     try {
         const url = `${API_BASE}/bill/checkBill`;
         const response = await axios.post(url, 
@@ -15,6 +16,25 @@ const createBill = async (MADOCGIA, LIST_MA_BANSAO, LOAITHANHTOAN) => {
                 }
             }
         );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const createBill = async (MADOCGIA, LIST_MA_BANSAO, LOAITHANHTOAN) => {
+    try {
+        const url = `${API_BASE}/bill/create`;
+        const response = await axios.post(url, {
+            MADOCGIA,
+            LIST_MA_BANSAO,
+            LOAITHANHTOAN,
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
         return response.data;
     } catch (error) {
         throw error;
@@ -70,8 +90,9 @@ const confirmCashPayment = async (MABILL) => {
 };
 
 export {
-    createBill,
+    checkBill,
     getBillById,
     getBillsByDocGia,
-    confirmCashPayment
+    confirmCashPayment,
+    createBill
 };

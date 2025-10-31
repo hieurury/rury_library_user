@@ -18,7 +18,7 @@ import { useRouter } from 'vue-router';
 import { getSelectedBagItems, clearBag, clearSelectedBagItems } from '../hooks/useBag';
 import { getAccountData } from '../hooks/useAccount';
 import { getBookById } from '../services/apiBook';
-import { createBill } from '../services/apiBill';
+import { checkBill } from '../services/apiBill';
 import { getUserInfo, getBorrowingCount } from '../services/apiUser';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
@@ -142,7 +142,7 @@ const handleSubmit = async () => {
         // Lấy danh sách MA_BANSAO từ tất cả sách hiển thị
         const LIST_MA_BANSAO = booksDetail.value.map(book => book.copyId);
         
-        const response = await createBill(
+        const response = await checkBill(
             userData.value.MADOCGIA,
             LIST_MA_BANSAO,
             paymentMethod.value
@@ -153,8 +153,8 @@ const handleSubmit = async () => {
         // apiBill.js return response.data, nên response chính là data từ server
         // Server trả về: { status, message, data: { bill, paymentUrl, ... } }
         const paymentUrl = response?.paymentUrl;
-        
-        if(!paymentUrl) {
+
+        if (!paymentUrl) {
             message.error('Có lỗi xảy ra trong quá trình xử lý thanh toán VNPAY');
             submitting.value = false;
             return;

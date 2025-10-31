@@ -26,12 +26,13 @@ import {
     toggleSelectedBagItem,
     selectAllBagItems,
     clearSelectedBagItems,
-    isSelectedInBag
+    isSelectedInBag,
+    getSelectedBagItems
 } from '../hooks/useBag';
 import { getAccountData } from '../hooks/useAccount';
 import { getBookById } from '../services/apiBook';
 import { getUserInfo, getBorrowingCount } from '../services/apiUser';
-
+import { setBookIds, getBookIds } from '../hooks/usePayment';
 const API_BASE = import.meta.env.VITE_API_BASE;
 const router = useRouter();
 const message = useMessage();
@@ -164,6 +165,9 @@ const handleSelectAll = () => {
 };
 
 const handleConfirm = () => {
+    const ids = getSelectedBagItems().map(item => item.copyId);
+    setBookIds(ids);
+    console.log(getBookIds());
     if (selectedBagItems.value.length === 0) {
         message.warning('Vui lòng chọn ít nhất 1 cuốn sách để mượn');
         return;
