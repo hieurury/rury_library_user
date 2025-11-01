@@ -32,7 +32,7 @@ import {
 import { getAccountData } from '../hooks/useAccount';
 import { getBookById } from '../services/apiBook';
 import { getUserInfo, getBorrowingCount } from '../services/apiUser';
-import { setBookIds, getBookIds } from '../hooks/usePayment';
+import { setBookIds, getBookIds, clearBookIds } from '../hooks/usePayment';
 const API_BASE = import.meta.env.VITE_API_BASE;
 const router = useRouter();
 const message = useMessage();
@@ -140,6 +140,7 @@ const handleRemove = (copyId) => {
 };
 
 const handleClearAll = () => {
+    clearBookIds();
     clearBag();
 };
 

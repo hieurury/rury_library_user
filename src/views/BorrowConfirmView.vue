@@ -12,14 +12,18 @@ import {
     NDescriptions,
     NDescriptionsItem,
     NSpin,
+    NRadioGroup,
+    NRadioButton,
+    NModal,
     useMessage
 } from 'naive-ui';
 import { useRouter } from 'vue-router';
 import { getSelectedBagItems, clearBag, clearSelectedBagItems } from '../hooks/useBag';
 import { getAccountData } from '../hooks/useAccount';
 import { getBookById } from '../services/apiBook';
-import { checkBill } from '../services/apiBill';
+import { checkBill, createBill } from '../services/apiBill';
 import { getUserInfo, getBorrowingCount } from '../services/apiUser';
+import { clearBookIds, getBookIds, setBookIds } from '../hooks/usePayment'
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 const router = useRouter();
@@ -31,8 +35,9 @@ const submitting = ref(false);
 const booksDetail = ref([]); // Chỉ chứa sách được chọn từ BagDrawer
 const userInfo = ref(null);
 const currentBorrowingCount = ref(0);
-const paymentMethod = ref('online'); // Chỉ còn 'online' (VNPAY)
+const paymentMethod = ref('online'); // 'online' (VNPAY) hoặc 'cash' (Tiền mặt)
 const billData = ref(null);
+const showSuccessModal = ref(false);
 
 // Computed
 const userData = computed(() => getAccountData());
@@ -73,7 +78,7 @@ onMounted(async () => {
     }
     
     // Lấy các sách đã được chọn từ BagDrawer
-    const selectedItems = getSelectedBagItems();
+    const selectedItems = getBookIds();
     if (selectedItems.length === 0) {
         message.warning('Chưa có sách nào được chọn');
         router.push('/');
@@ -99,11 +104,10 @@ const loadData = async (selectedItems) => {
         // Load books detail cho các sách đã chọn
         const bookPromises = selectedItems.map(async (item) => {
             try {
-                const res = await getBookById(item.bookId);
+                const res = await getBookById(item.split('T')[0]);
                 return {
                     ...res.data,
-                    copyId: item.copyId,
-                    condition: item.condition
+                    copyId: item,
                 };
             } catch (error) {
                 console.error(`Error loading book ${item.bookId}:`, error);
@@ -126,7 +130,7 @@ const loadData = async (selectedItems) => {
     }
 };
 
-const handleSubmit = async () => {
+const handleVNPSubmit = async () => {
     if (booksDetail.value.length === 0) {
         message.warning('Không có sách để mượn');
         return;
@@ -159,7 +163,8 @@ const handleSubmit = async () => {
             submitting.value = false;
             return;
         }
-        console.log(paymentUrl);
+        clearSelectedBagItems();
+        clearBag();
         // Chuyển hướng đến URL thanh toán VNPAY
         window.location.href = paymentUrl;
     } catch (error) {
@@ -171,11 +176,66 @@ const handleSubmit = async () => {
     }
 };
 
+const handleCashSubmit = async () => {
+    if (booksDetail.value.length === 0) {
+        message.warning('Không có sách để mượn');
+        return;
+    }
+    
+    if (!canProceed.value) {
+        message.error(`Bạn chỉ còn có thể mượn thêm ${remainingSlots.value} cuốn sách`);
+        return;
+    }
+    
+    submitting.value = true;
+    try {
+        // Lấy danh sách MA_BANSAO từ tất cả sách hiển thị
+        const LIST_MA_BANSAO = booksDetail.value.map(book => book.copyId);
+        
+        const response = await createBill(
+            userData.value.MADOCGIA,
+            LIST_MA_BANSAO,
+            paymentMethod.value
+        );
+        billData.value = response;
+        
+        // Hiển thị modal thành công
+        showSuccessModal.value = true;
+        
+        // Xoá giỏ hàng và sách đã chọn
+        clearSelectedBagItems();
+        clearBookIds();
+        
+    } catch (error) {
+        console.error('❌ Error creating bill:', error);
+        console.error('Error response:', error.response?.data);
+        const errorMsg = error.response?.data?.message || 'Không thể tạo phiếu mượn';
+        message.error(errorMsg);
+    } finally {
+        submitting.value = false;
+    }
+};
+
+const returnPage = () => {
+    clearBookIds();
+    router.back();
+};
+
 const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
         style: 'currency',
         currency: 'VND'
     }).format(price);
+};
+
+const goToHistory = () => {
+    showSuccessModal.value = false;
+    router.push('/profile/history');
+};
+
+const goToHome = () => {
+    showSuccessModal.value = false;
+    router.push('/');
 };
 </script>
 
@@ -242,12 +302,6 @@ const formatPrice = (price) => {
                                                     </NText>
                                                     <NSpace :size="4">
                                                         <NTag size="tiny" type="info">{{ book.copyId }}</NTag>
-                                                        <NTag 
-                                                            size="tiny" 
-                                                            :type="book.condition === 'new' ? 'success' : 'warning'"
-                                                        >
-                                                            {{ book.condition === 'new' ? 'Mới' : 'Cũ' }}
-                                                        </NTag>
                                                     </NSpace>
                                                     <NSpace :size="4">
                                                         <NTag
@@ -313,17 +367,36 @@ const formatPrice = (price) => {
                                 <!-- Payment Method -->
                                 <NCard title="Phương thức thanh toán" :bordered="true">
                                     <NSpace vertical :size="12">
-                                        <NSpace align="center">
-                                            <NIcon size="24" color="#0088cc">
-                                                <i class="fa-solid fa-credit-card"></i>
-                                            </NIcon>
-                                            <div>
-                                                <div class="font-semibold text-lg">Chuyển khoản VNPAY</div>
-                                                <NText depth="3" class="text-sm">
-                                                    Thanh toán trực tuyến an toàn
-                                                </NText>
-                                            </div>
-                                        </NSpace>
+                                        <NRadioGroup v-model:value="paymentMethod" size="large" class="w-full">
+                                            <NSpace vertical :size="12" class="w-full">
+                                                <NRadioButton value="online" class="w-full">
+                                                    <NSpace align="center">
+                                                        <NIcon size="20" color="#0088cc">
+                                                            <i class="fa-solid fa-credit-card"></i>
+                                                        </NIcon>
+                                                        <div class="w-full">
+                                                            <div class="font-semibold">Chuyển khoản VNPAY</div>
+                                                            <NText depth="3" class="text-xs">
+                                                                Thanh toán trực tuyến an toàn
+                                                            </NText>
+                                                        </div>
+                                                    </NSpace>
+                                                </NRadioButton>
+                                                <NRadioButton value="cash" class="w-full">
+                                                    <NSpace align="center">
+                                                        <NIcon size="20" color="#52c41a">
+                                                            <i class="fa-solid fa-money-bill-wave"></i>
+                                                        </NIcon>
+                                                        <div>
+                                                            <div class="font-semibold">Tiền mặt</div>
+                                                            <NText depth="3" class="text-xs">
+                                                                Thanh toán tại quầy thư viện
+                                                            </NText>
+                                                        </div>
+                                                    </NSpace>
+                                                </NRadioButton>
+                                            </NSpace>
+                                        </NRadioGroup>
                                         <NDivider class="!my-2" />
                                         <NText depth="3" class="text-xs">
                                             💡 Sau khi thanh toán thành công, vui lòng đến quầy thư viện để nhận sách
@@ -348,17 +421,32 @@ const formatPrice = (price) => {
                                         </NSpace>
                                         <NDivider class="!my-0" />
                                         <NButton
+                                            v-if="paymentMethod === 'online'"
                                             type="primary"
                                             size="large"
                                             block
                                             :loading="submitting"
                                             :disabled="!canProceed"
-                                            @click="handleSubmit"
+                                            @click="handleVNPSubmit"
                                         >
                                             <template #icon>
                                                 <NIcon><i class="fa-solid fa-credit-card"></i></NIcon>
                                             </template>
                                             Thanh toán VNPAY
+                                        </NButton>
+                                        <NButton
+                                            v-else
+                                            type="success"
+                                            size="large"
+                                            block
+                                            :loading="submitting"
+                                            :disabled="!canProceed"
+                                            @click="handleCashSubmit"
+                                        >
+                                            <template #icon>
+                                                <NIcon><i class="fa-solid fa-money-bill-wave"></i></NIcon>
+                                            </template>
+                                            Thanh toán tiền mặt
                                         </NButton>
                                         <NText v-if="!canProceed" type="error" class="text-xs text-center">
                                             Vượt quá giới hạn! Bạn chỉ còn có thể mượn thêm {{ remainingSlots }} cuốn
@@ -366,7 +454,7 @@ const formatPrice = (price) => {
                                         <NButton
                                             size="large"
                                             block
-                                            @click="router.push('/')"
+                                            @click="returnPage"
                                         >
                                             <template #icon>
                                                 <NIcon><i class="fa-solid fa-arrow-left"></i></NIcon>
@@ -381,5 +469,31 @@ const formatPrice = (price) => {
                 </template>
             </NSpace>
         </div>
+
+        <!-- Success Modal -->
+        <NModal
+            v-model:show="showSuccessModal"
+            preset="dialog"
+            title="Thanh toán thành công!"
+            positive-text="Xem lịch sử mượn"
+            negative-text="Về trang chủ"
+            @positive-click="goToHistory"
+            @negative-click="goToHome"
+        >
+            <NSpace vertical :size="16" align="center" class="py-4">
+                <NIcon size="64" color="#52c41a">
+                    <i class="fa-solid fa-circle-check"></i>
+                </NIcon>
+                <div class="text-center">
+                    <NText class="text-lg font-semibold">
+                        Tạo phiếu mượn thành công!
+                    </NText>
+                    <br />
+                    <NText depth="3" class="text-sm mt-2">
+                        Vui lòng đến quầy thư viện để thanh toán và nhận sách
+                    </NText>
+                </div>
+            </NSpace>
+        </NModal>
     </div>
 </template>

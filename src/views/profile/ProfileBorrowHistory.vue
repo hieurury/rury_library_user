@@ -158,11 +158,13 @@ const columns = [
             return h(
                 NTag,
                 {
-                    type: 'success',
+                    type: 'info',
                     size: 'small'
                 },
                 {
-                    default: () => 'VNPAY'
+                    default: () => {
+                        return row.LOAITHANHTOAN === 'online' ? 'VNPAY' : 'Tiền mặt';
+                    }
                 }
             );
         }
@@ -175,11 +177,11 @@ const columns = [
             return h(
                 NTag,
                 {
-                    type: 'success',
+                    type: row.TRANGTHAI ? 'success' : 'warning',
                     size: 'small'
                 },
                 {
-                    default: () => '✅ Đã thanh toán'
+                    default: () => row.TRANGTHAI ? 'Đã thanh toán' : 'Chưa thanh toán'
                 }
             );
         }
@@ -208,6 +210,26 @@ const columns = [
         }
     }
 ];
+
+const renderTINHTRANG = (status) => {
+    if (status === 'borrowing') {
+        return {
+            status: 'Đang mượn',
+            type: 'warning'
+        };
+    } else if (status === 'returned') {
+        return {
+            status: 'Đã trả',
+            type: 'success'
+        };
+    } else {
+        return {
+            status: 'Chờ lấy',
+            type: 'info'
+        };
+    }
+};
+
 </script>
 
 <template>
@@ -284,13 +306,13 @@ const columns = [
                                 {{ formatDate(selectedBill.NGAYLAP) }}
                             </NDescriptionsItem>
                             <NDescriptionsItem label="Phương thức">
-                                <NTag type="success">
-                                    VNPAY
+                                <NTag type="info">
+                                    {{ selectedBill.LOAITHANHTOAN === 'online' ? 'VNPAY' : 'Tiền mặt' }}
                                 </NTag>
                             </NDescriptionsItem>
                             <NDescriptionsItem label="Trạng thái">
-                                <NTag type="success">
-                                    ✅ Đã thanh toán
+                                <NTag :type="selectedBill.TRANGTHAI ? 'success' : 'warning'">
+                                    {{ selectedBill.TRANGTHAI ? 'Đã thanh toán' : 'Chưa thanh toán' }}
                                 </NTag>
                             </NDescriptionsItem>
                             <NDescriptionsItem v-if="selectedBill.NGAYTHANHTOAN" label="Ngày thanh toán">
@@ -352,9 +374,9 @@ const columns = [
                                             </div>
                                             <NTag
                                                 size="small"
-                                                :type="phieu.TINHTRANG === 'borrowing' ? 'warning' : 'success'"
+                                                :type="renderTINHTRANG(phieu.TINHTRANG).type"
                                             >
-                                                {{ phieu.TINHTRANG === 'borrowing' ? 'Đang mượn' : 'Đã trả' }}
+                                                {{ renderTINHTRANG(phieu.TINHTRANG).status }}
                                             </NTag>
                                         </NSpace>
                                     </NGi>

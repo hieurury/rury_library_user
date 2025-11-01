@@ -16,6 +16,7 @@ import {
 } from 'naive-ui';
 import { getAvailableCopies } from '../services/apiBook';
 import { addToBag, isInBag } from '../hooks/useBag';
+import { setBookIds, getBookIds } from '../hooks/usePayment';
 
 const props = defineProps({
     show: Boolean,
@@ -76,7 +77,8 @@ const handleConfirm = () => {
         message.warning('Bản sao này đã có trong balo');
         return;
     }
-    
+    const bookIdsInBag = getBookIds();
+    setBookIds([...bookIdsInBag, copy.MA_BANSAO]);
     // Thêm vào balo
     const success = addToBag(props.bookId, selectedCopy.value, copy.TINHTRANG);
     
