@@ -1,6 +1,6 @@
 <template>
     <div class="notification-bell">
-        <NDropdown trigger="click" :options="dropdownOptions" @select="handleSelect">
+        <NDropdown trigger="click" :options="dropdownOptions" @select="handleSelect" class="max-h-[400px] overflow-y-scroll">
             <NBadge :value="unreadCount" :max="99" :show="unreadCount > 0">
                 <NButton circle quaternary @click="loadNotifications">
                     <template #icon>
@@ -16,8 +16,8 @@
 
 <script setup>
 import { ref, computed, h, onMounted } from 'vue';
-import { NDropdown, NBadge, NButton, NIcon, NText, NSpace, NTime, useMessage } from 'naive-ui';
-import { getNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '../services/apiUser';
+import { NDropdown, NScrollbar, NBadge, NButton, NIcon, NText, NSpace, NTime, useMessage } from 'naive-ui';
+import { getNotifications, markNotificationAsRead, markAllNotificationsAsRead, deleteAllNotifications } from '../services/apiUser';
 
 const message = useMessage();
 const notifications = ref([]);
@@ -78,16 +78,33 @@ const dropdownOptions = computed(() => {
         )
     }));
 
-    // Thêm divider và nút "Đánh dấu tất cả đã đọc"
+    // Thêm divider và các nút hành động
     if (unreadCount.value > 0) {
         notifOptions.push(
-            { type: 'divider', key: 'divider' },
+            { type: 'divider', key: 'divider-1' },
             {
                 key: 'mark-all-read',
                 label: 'Đánh dấu tất cả đã đọc',
                 icon: () => h(NIcon, null, {
                     default: () => h('i', { class: 'fas fa-check-double' })
                 })
+            }
+        );
+    }
+    
+    // Thêm nút xóa tất cả nếu có thông báo
+    if (notifications.value.length > 0) {
+        notifOptions.push(
+            { type: 'divider', key: 'divider-2' },
+            {
+                key: 'delete-all',
+                label: 'Xóa tất cả thông báo',
+                icon: () => h(NIcon, null, {
+                    default: () => h('i', { class: 'fas fa-trash', style: 'color: #d03050' })
+                }),
+                props: {
+                    style: 'color: #d03050'
+                }
             }
         );
     }
@@ -118,7 +135,15 @@ const handleSelect = async (key) => {
         } catch (error) {
             message.error('Không thể đánh dấu thông báo');
         }
-    } else if (key !== 'empty' && key !== 'divider') {
+    } else if (key === 'delete-all') {
+        try {
+            await deleteAllNotifications();
+            message.success('Đã xóa tất cả thông báo');
+            await loadNotifications();
+        } catch (error) {
+            message.error('Không thể xóa thông báo');
+        }
+    } else if (key !== 'empty' && key !== 'divider-1' && key !== 'divider-2') {
         try {
             await markNotificationAsRead(key);
             await loadNotifications();

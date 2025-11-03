@@ -165,6 +165,22 @@ const markAllNotificationsAsRead = async () => {
     }
 };
 
+// Xóa tất cả thông báo
+const deleteAllNotifications = async () => {
+    try {
+        const url = `${API_BASE}/user/notifications/delete-all`;
+        const response = await axios.delete(url, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
 export { 
     registerAccount, 
     loginccount, 
@@ -175,5 +191,6 @@ export {
     updateEmailNotification,
     getNotifications,
     markNotificationAsRead,
-    markAllNotificationsAsRead
+    markAllNotificationsAsRead,
+    deleteAllNotifications
 };
