@@ -79,20 +79,21 @@ onMounted(async () => {
         const LIST_MA_BANSAO = getBookIds();
         const LOAITHANHTOAN = 'online';
         loading.value = true;
-
-        console.log(MADOCGIA, LIST_MA_BANSAO, LOAITHANHTOAN);
         const response = await createBill(
             MADOCGIA,
             LIST_MA_BANSAO,
             LOAITHANHTOAN
         );
-        console.log(response);
         loading.value = false;
         if(response.status === 'success') {
             billStatus.value = 'success';
             clearBookIds();
             //xoá các sách đã chọn khỏi giỏ
             clearSelectedBagItems(LIST_MA_BANSAO);
+            // Xóa CHỈ những sách đã chọn khỏi balo (không xóa toàn bộ)
+            LIST_MA_BANSAO.forEach(copyId => {
+                removeFromBag(copyId);
+            });
         } else {
             billStatus.value = 'error';
         }
