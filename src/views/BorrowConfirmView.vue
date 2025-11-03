@@ -156,14 +156,6 @@ const handleVNPSubmit = async () => {
             return;
         }
         
-        // Xóa CHỈ những sách đã chọn khỏi balo (không xóa toàn bộ)
-        LIST_MA_BANSAO.forEach(copyId => {
-            removeFromBag(copyId);
-        });
-        
-        // Xóa selection và bookIds
-        clearSelectedBagItems();
-        clearBookIds();
         
         window.location.href = paymentUrl;
     } catch (error) {
