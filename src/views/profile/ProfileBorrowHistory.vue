@@ -18,10 +18,11 @@ import {
     NGrid,
     NGi,
     NPagination,
+    NPopconfirm,
     useMessage
 } from 'naive-ui';
 import { getAccountData } from '../../hooks/useAccount';
-import { getBillsByDocGia, getBillById } from '../../services/apiBill';
+import { getBillsByDocGia, getBillById, cancelBill } from '../../services/apiBill';
 import { useRouter } from 'vue-router';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
@@ -54,6 +55,7 @@ onMounted(async () => {
     }
     
     await loadBills(userData.MADOCGIA);
+    console.log(bills.value);
 });
 
 // Methods
@@ -63,7 +65,6 @@ const loadBills = async (MADOCGIA) => {
         const response = await getBillsByDocGia(MADOCGIA);
         bills.value = response.data || [];
     } catch (error) {
-        console.error(error);
         message.error('Không thể tải lịch sử mượn');
     } finally {
         loading.value = false;
@@ -78,12 +79,40 @@ const handleViewDetail = async (row) => {
         const response = await getBillById(row.MABILL);
         selectedBill.value = response.data;
     } catch (error) {
-        console.error(error);
         message.error('Không thể tải chi tiết bill');
     } finally {
         detailLoading.value = false;
     }
 };
+
+const handleCancelBill = async () => {
+    if (!selectedBill.value) return;
+    
+    try {
+        const response = await cancelBill(selectedBill.value.MABILL);
+        message.success(response.message || 'Hủy đơn mượn sách thành công');
+        
+        // Reload bills và đóng drawer
+        const userData = getAccountData();
+        await loadBills(userData.MADOCGIA);
+        showDetailDrawer.value = false;
+        selectedBill.value = null;
+    } catch (error) {
+        message.error(error.response?.data?.message || 'Không thể hủy đơn mượn sách');
+    }
+};
+
+const canCancelBill = computed(() => {
+    if (!selectedBill.value) return false;
+    
+    // Chỉ cho phép hủy nếu:
+    // 1. Chưa thanh toán HOẶC
+    // 2. Tất cả phiếu đang ở trạng thái waiting
+    const hasWaitingPhieu = selectedBill.value.PHIEUMUON?.some(p => p.TINHTRANG === 'waiting');
+    const allWaiting = selectedBill.value.PHIEUMUON?.every(p => p.TINHTRANG === 'waiting');
+    
+    return !selectedBill.value.BIHUY && hasWaitingPhieu && allWaiting;
+});
 
 const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -177,11 +206,17 @@ const columns = [
             return h(
                 NTag,
                 {
-                    type: row.TRANGTHAI ? 'success' : 'warning',
+                    type: row.BIHUY ? 'error' : (row.TRANGTHAI ? 'success' : 'warning'),
                     size: 'small'
                 },
                 {
-                    default: () => row.TRANGTHAI ? 'Đã thanh toán' : 'Chưa thanh toán'
+                    default: () => {
+                        if(row.BIHUY) {
+                            return 'Đã huỷ';
+                        } else {
+                            return row.TRANGTHAI ? 'Đã thanh toán' : 'Chưa thanh toán';
+                        }
+                    }
                 }
             );
         }
@@ -354,7 +389,10 @@ const renderTINHTRANG = (status) => {
                                     <!-- Book Info -->
                                     <NGi :span="3">
                                         <NSpace vertical :size="4">
-                                            <h4 class="font-semibold text-sm line-clamp-2">
+                                            <h4 
+                                                class="font-semibold text-sm line-clamp-2 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                                @click="router.push(`/book/${phieu.SACH?.MASACH}`)"
+                                            >
                                                 {{ phieu.SACH?.TENSACH }}
                                             </h4>
                                             <p class="text-xs text-gray-600 dark:text-gray-400">
@@ -388,6 +426,31 @@ const renderTINHTRANG = (status) => {
                         <div v-else>
                             <NEmpty description="Chưa có sách nào" size="small" />
                         </div>
+                    </NCard>
+
+                    <!-- Cancel Bill Button -->
+                    <NCard v-if="canCancelBill" :bordered="true" size="small">
+                        <NSpace vertical :size="12">
+                            <div class="text-sm text-gray-600 dark:text-gray-400">
+                                <NIcon color="#faad14"><i class="fa-solid fa-circle-info"></i></NIcon>
+                                Đơn mượn sách này đang chờ lấy sách. Bạn có thể hủy đơn nếu không còn nhu cầu mượn.
+                            </div>
+                            <NPopconfirm
+                                @positive-click="handleCancelBill"
+                                positive-text="Xác nhận hủy"
+                                negative-text="Không"
+                            >
+                                <template #trigger>
+                                    <NButton type="error" block secondary>
+                                        <template #icon>
+                                            <NIcon><i class="fa-solid fa-trash-can"></i></NIcon>
+                                        </template>
+                                        Hủy đơn mượn sách
+                                    </NButton>
+                                </template>
+                                Bạn có chắc chắn muốn hủy đơn mượn sách này? Hành động này không thể hoàn tác.
+                            </NPopconfirm>
+                        </NSpace>
                     </NCard>
                 </NSpace>
             </NDrawerContent>

@@ -341,7 +341,10 @@ watch([searchQuery, selectedCategory, selectedYearRange, priceRange, borrowRange
 
           <!-- Books -->
           <NGi v-else v-for="book in paginatedBooks" :key="book.MASACH" span="1">
-                <NThing class="shadow-md rounded-lg hover:shadow-xl transition-shadow duration-200 cursor-pointer">
+                <NThing 
+                  class="shadow-md rounded-lg hover:shadow-xl transition-shadow duration-200 cursor-pointer"
+                  @click="router.push(`/book/${book.MASACH}`)"
+                >
                   <template #description>
                     <NGrid cols="5" x-gap="12">
                         <!-- Image -->

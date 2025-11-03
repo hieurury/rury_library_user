@@ -15,7 +15,7 @@ const router = useRouter();
 </script>
 
 <template>
-    <footer class="bg-gray-900 text-gray-300 py-12 mt-16">
+    <footer class="bg-gray-900 text-gray-300 py-12">
         <div class="container mx-auto px-8 max-w-7xl">
             <NGrid :cols="4" :x-gap="32" :y-gap="24">
                 <!-- Logo & About -->

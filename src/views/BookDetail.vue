@@ -47,7 +47,6 @@ const loadBookData = async () => {
         bookData.value = rs.data;
     } catch (error) {
         message.error('Không thể tải thông tin sách');
-        console.error(error);
     } finally {
         loading.value = false;
     }

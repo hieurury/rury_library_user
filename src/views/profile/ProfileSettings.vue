@@ -22,7 +22,7 @@ import {
 } from 'naive-ui';
 import { useRouter } from 'vue-router';
 import { getAccountData } from '../../hooks/useAccount';
-import { getUserInfo } from '../../services/apiUser';
+import { getUserInfo, updateEmailNotification } from '../../services/apiUser';
 import ProfileSidebar from '../../components/ProfileSidebar.vue';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
@@ -110,10 +110,7 @@ const handleUpdateProfile = async () => {
         //     DIACHI: formValue.DIACHI,
         //     NGAYSINH: new Date(formValue.NGAYSINH),
         //     PHAI: formValue.PHAI,
-        //     AVATAR: formValue.AVATAR,
-        //     OPTIONS: {
-        //         EMAIL_NOTIF: formValue.EMAIL_NOTIF
-        //     }
+        //     AVATAR: formValue.AVATAR
         // };
         // await updateUser(userInfo.value.MADOCGIA, updateData);
 
@@ -126,6 +123,18 @@ const handleUpdateProfile = async () => {
         }
     } finally {
         loading.value = false;
+    }
+};
+
+const handleEmailNotificationChange = async (value) => {
+    try {
+        const response = await updateEmailNotification(value);
+        message.success(response.message || 'Cập nhật cài đặt thành công');
+        formValue.EMAIL_NOTIF = value;
+    } catch (error) {
+        message.error(error.response?.data?.message || 'Không thể cập nhật cài đặt');
+        // Revert về giá trị cũ nếu failed
+        formValue.EMAIL_NOTIF = !value;
     }
 };
 
@@ -255,11 +264,17 @@ const handleAvatarUpload = ({ file }) => {
 
                     <NFormItem label="Nhận thông báo email">
                         <NSpace align="center">
-                            <NSwitch v-model:value="formValue.EMAIL_NOTIF" />
+                            <NSwitch 
+                                v-model:value="formValue.EMAIL_NOTIF"
+                                @update:value="handleEmailNotificationChange"
+                            />
                             <span class="text-sm text-gray-500 dark:text-gray-400">
                                 {{ formValue.EMAIL_NOTIF ? 'Đang bật' : 'Đang tắt' }}
                             </span>
                         </NSpace>
+                        <div class="text-xs text-gray-400 mt-2">
+                            Nhận email thông báo về mượn sách, gần đến hạn trả, và các cập nhật quan trọng
+                        </div>
                     </NFormItem>
 
                     <NDivider />

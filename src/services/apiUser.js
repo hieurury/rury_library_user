@@ -92,4 +92,88 @@ const getBorrowingCount = async (MADOCGIA) => {
     }
 };
 
-export { registerAccount, loginccount, getUserInfo, addFavorite, removeFavorite, getBorrowingCount };
+// Cập nhật cài đặt email notification
+const updateEmailNotification = async (EMAIL_NOTIF) => {
+    try {
+        const url = `${API_BASE}/user/settings/email-notification`;
+        const response = await axios.put(url, 
+            { EMAIL_NOTIF },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Lấy danh sách thông báo
+const getNotifications = async () => {
+    try {
+        const url = `${API_BASE}/user/notifications`;
+        const response = await axios.get(url, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Đánh dấu thông báo đã đọc
+const markNotificationAsRead = async (notificationId) => {
+    try {
+        const url = `${API_BASE}/user/notifications/mark-read`;
+        const response = await axios.put(url, 
+            { notificationId },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Đánh dấu tất cả thông báo đã đọc
+const markAllNotificationsAsRead = async () => {
+    try {
+        const url = `${API_BASE}/user/notifications/mark-all-read`;
+        const response = await axios.put(url, 
+            {},
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export { 
+    registerAccount, 
+    loginccount, 
+    getUserInfo, 
+    addFavorite, 
+    removeFavorite, 
+    getBorrowingCount,
+    updateEmailNotification,
+    getNotifications,
+    markNotificationAsRead,
+    markAllNotificationsAsRead
+};

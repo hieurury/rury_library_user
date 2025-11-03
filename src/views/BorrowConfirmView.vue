@@ -18,7 +18,7 @@ import {
     useMessage
 } from 'naive-ui';
 import { useRouter } from 'vue-router';
-import { getSelectedBagItems, clearBag, clearSelectedBagItems } from '../hooks/useBag';
+import { getSelectedBagItems, clearBag, clearSelectedBagItems, removeFromBag } from '../hooks/useBag';
 import { getAccountData } from '../hooks/useAccount';
 import { getBookById } from '../services/apiBook';
 import { checkBill, createBill } from '../services/apiBill';
@@ -110,7 +110,6 @@ const loadData = async (selectedItems) => {
                     copyId: item,
                 };
             } catch (error) {
-                console.error(`Error loading book ${item.bookId}:`, error);
                 return null;
             }
         });
@@ -118,13 +117,11 @@ const loadData = async (selectedItems) => {
         const books = await Promise.all(bookPromises);
         booksDetail.value = books.filter(book => book !== null);
         
-        // Kiểm tra giới hạn
         if (booksDetail.value.length > remainingSlots.value) {
             message.error(`Bạn chỉ còn có thể mượn thêm ${remainingSlots.value} cuốn sách`);
         }
     } catch (error) {
         message.error('Không thể tải thông tin');
-        console.error(error);
     } finally {
         loading.value = false;
     }
@@ -143,7 +140,6 @@ const handleVNPSubmit = async () => {
     
     submitting.value = true;
     try {
-        // Lấy danh sách MA_BANSAO từ tất cả sách hiển thị
         const LIST_MA_BANSAO = booksDetail.value.map(book => book.copyId);
         
         const response = await checkBill(
@@ -153,9 +149,6 @@ const handleVNPSubmit = async () => {
         );
         billData.value = response;
         
-        // Chỉ còn VNPAY - Kiểm tra xem có paymentUrl không
-        // apiBill.js return response.data, nên response chính là data từ server
-        // Server trả về: { status, message, data: { bill, paymentUrl, ... } }
         const paymentUrl = response?.paymentUrl;
 
         if (!paymentUrl) {
@@ -163,13 +156,18 @@ const handleVNPSubmit = async () => {
             submitting.value = false;
             return;
         }
+        
+        // Xóa CHỈ những sách đã chọn khỏi balo (không xóa toàn bộ)
+        LIST_MA_BANSAO.forEach(copyId => {
+            removeFromBag(copyId);
+        });
+        
+        // Xóa selection và bookIds
         clearSelectedBagItems();
-        clearBag();
-        // Chuyển hướng đến URL thanh toán VNPAY
+        clearBookIds();
+        
         window.location.href = paymentUrl;
     } catch (error) {
-        console.error('❌ Error creating bill:', error);
-        console.error('Error response:', error.response?.data);
         const errorMsg = error.response?.data?.message || 'Không thể tạo phiếu mượn';
         message.error(errorMsg);
         submitting.value = false;
@@ -189,7 +187,6 @@ const handleCashSubmit = async () => {
     
     submitting.value = true;
     try {
-        // Lấy danh sách MA_BANSAO từ tất cả sách hiển thị
         const LIST_MA_BANSAO = booksDetail.value.map(book => book.copyId);
         
         const response = await createBill(
@@ -199,16 +196,18 @@ const handleCashSubmit = async () => {
         );
         billData.value = response;
         
-        // Hiển thị modal thành công
         showSuccessModal.value = true;
         
-        // Xoá giỏ hàng và sách đã chọn
+        // Xóa CHỈ những sách đã chọn khỏi balo
+        LIST_MA_BANSAO.forEach(copyId => {
+            removeFromBag(copyId);
+        });
+        
+        // Xóa selection và bookIds
         clearSelectedBagItems();
         clearBookIds();
         
     } catch (error) {
-        console.error('❌ Error creating bill:', error);
-        console.error('Error response:', error.response?.data);
         const errorMsg = error.response?.data?.message || 'Không thể tạo phiếu mượn';
         message.error(errorMsg);
     } finally {
@@ -292,7 +291,10 @@ const goToHome = () => {
 
                                             <!-- Book Info -->
                                             <div class="flex-1">
-                                                <h3 class="text-lg font-semibold mb-2">
+                                                <h3 
+                                                    class="text-lg font-semibold mb-2 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                                    @click="router.push(`/book/${book.MASACH}`)"
+                                                >
                                                     {{ book.TENSACH }}
                                                 </h3>
                                                 <NSpace vertical :size="4">

@@ -37,7 +37,7 @@ onMounted(async () => {
         userFavorites.value = res.data.FAVORITES || [];
         checkIsFavorite();
     } catch (error) {
-        console.error('Error loading favorites:', error);
+        // Silent fail
     }
 });
 

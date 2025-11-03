@@ -89,10 +89,29 @@ const confirmCashPayment = async (MABILL) => {
     }
 };
 
+const cancelBill = async (MABILL) => {
+    try {
+        const url = `${API_BASE}/bill/cancel`;
+        const response = await axios.post(url,
+            { MABILL },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
 export {
     checkBill,
     getBillById,
     getBillsByDocGia,
     confirmCashPayment,
+    cancelBill,
     createBill
 };

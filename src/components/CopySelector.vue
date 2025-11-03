@@ -50,13 +50,11 @@ const loadCopies = async () => {
         copies.value = response.data.copies || [];
         totalAvailable.value = response.data.totalAvailable || 0;
         
-        // Auto select first available copy not in bag
         const firstAvailable = copies.value.find(copy => !isInBag(copy.MA_BANSAO));
         if (firstAvailable) {
             selectedCopy.value = firstAvailable.MA_BANSAO;
         }
     } catch (error) {
-        console.error(error);
         message.error('Không thể tải danh sách bản sao');
     } finally {
         loading.value = false;

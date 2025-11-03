@@ -82,10 +82,8 @@ watch(() => bagItems.value, async (newItems) => {
         clearSelectedBagItems();
         return;
     }
-    
     loading.value = true;
     try {
-        // newItems giờ là array of {bookId, copyId, condition}
         const bookPromises = newItems.map(async (item) => {
             try {
                 const res = await getBookById(item.bookId);
@@ -95,7 +93,6 @@ watch(() => bagItems.value, async (newItems) => {
                     condition: item.condition
                 };
             } catch (error) {
-                console.error(`Error loading book ${item.bookId}:`, error);
                 return null;
             }
         });
@@ -103,20 +100,18 @@ watch(() => bagItems.value, async (newItems) => {
         const books = await Promise.all(bookPromises);
         booksDetail.value = books.filter(book => book !== null);
     } catch (error) {
-        console.error('Error loading books:', error);
+        // Silent fail
     } finally {
         loading.value = false;
     }
 }, { immediate: true, deep: true });
 
-// Watch drawer show to load user info
 watch(() => props.show, async (newVal) => {
     if (newVal) {
         await loadUserInfo();
     }
 }, { immediate: true });
 
-// Load user info and borrowing count
 const loadUserInfo = async () => {
     const userData = getAccountData();
     if (!userData) return;
@@ -130,7 +125,7 @@ const loadUserInfo = async () => {
         userInfo.value = userRes.data;
         currentBorrowingCount.value = borrowingRes.data?.count || 0;
     } catch (error) {
-        console.error('Error loading user info:', error);
+        // Silent fail
     }
 };
 
@@ -168,7 +163,6 @@ const handleSelectAll = () => {
 const handleConfirm = () => {
     const ids = getSelectedBagItems().map(item => item.copyId);
     setBookIds(ids);
-    console.log(getBookIds());
     if (selectedBagItems.value.length === 0) {
         message.warning('Vui lòng chọn ít nhất 1 cuốn sách để mượn');
         return;
@@ -287,7 +281,10 @@ const handleConfirm = () => {
 
                         <!-- Book Info -->
                         <div class="flex-1 min-w-0">
-                            <h4 class="text-sm font-semibold mb-1 line-clamp-2">
+                            <h4 
+                                class="text-sm font-semibold mb-1 line-clamp-2 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                @click="router.push(`/book/${book.MASACH}`)"
+                            >
                                 {{ book.TENSACH }}
                             </h4>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mb-1 line-clamp-1">
