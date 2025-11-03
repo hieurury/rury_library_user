@@ -79,6 +79,8 @@ onMounted(async () => {
         const LIST_MA_BANSAO = getBookIds();
         const LOAITHANHTOAN = 'online';
         loading.value = true;
+
+        console.log(MADOCGIA, LIST_MA_BANSAO, LOAITHANHTOAN);
         const response = await createBill(
             MADOCGIA,
             LIST_MA_BANSAO,
