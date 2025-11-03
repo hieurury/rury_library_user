@@ -148,7 +148,6 @@ const handleVNPSubmit = async () => {
             paymentMethod.value
         );
         billData.value = response;
-        
         const paymentUrl = response?.paymentUrl;
 
         if (!paymentUrl) {
