@@ -93,7 +93,6 @@ const sendRequest = async (questionText = null) => {
             borrow_data: enableBorrowData.value, 
             lab_borrows: enableLabBorrows.value
         });
-        
         if(response) {
             history.value[aiMessageIndex].message = response;
         } else {

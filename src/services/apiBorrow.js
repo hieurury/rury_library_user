@@ -25,7 +25,7 @@ const getBorrowInfo = async (borrowId) => {
 
 const getAllBorrowsInfo = async () => {
   try {
-    const url = `${API_BASE}/borrow/all`;
+    const url = `${API_BASE}/borrow/admin/all`;
     const response = await axios.get(url);
     return response.data;
   } catch (error) {

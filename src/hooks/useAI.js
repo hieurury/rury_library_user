@@ -48,106 +48,110 @@ async function generate({
     short_response = false,
     lab_borrows = false
 }) {
-    const booksData = computed(async() => {
-        if(has_books) {
-            const rs = await getAllBooks();
-            return rs.data;
-        } else {
-            return [];
-        }
-    });
-    
-    const borrowData = computed(async() => {
-        if(borrow_data) {
-            const account = getAccountData();
-            if(!account || !account.MADOCGIA) {
-                return null;
+    try {
+        const booksData = computed(async() => {
+            if(has_books) {
+                const rs = await getAllBooks();
+                return rs.data;
+            } else {
+                return [];
             }
-            const rs = await getBorrowWithUserId(account.MADOCGIA);
-            const detailedBorrows = await Promise.all(rs.data.map(async(borrow) => {
-                const info = await getBorrowInfo(borrow.MAPHIEU);
-                return info;
-            }));
-            return detailedBorrows;
-        } else {
-            return [];
-        }
-    });
-
-    const labBorrowsData = computed(async() => {
-        if(lab_borrows) {
-            const allInfoBorrows = await getAllBorrowsInfo();
-            const configData = allInfoBorrows.data.map(borrow => {
-                return {
-                    MA_BANSAO: borrow.MA_BANSAO,
-                    NGAYMUON: borrow.NGAYMUON,
-                    NGAYTRA: borrow.NGAYTRA,
-                    TINHTRANG: borrow.TINHTRANG
-                }
-            });
-            return configData;
-        } else {
-            return [];
-        }
-    });
-
-    const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: [
-        {
-        role: "user",
-        parts: [
-            { text: message },
-            {
-                text: `Cho biết ngày hiện tại là ${new Date().toLocaleDateString()}.`
-            },
-            {
-                text: `Hãy tuân thủ các quy tắc sau khi trả lời người dùng:
-                ${JSON.stringify(RESPONSE_RULES)}`
-            },
-            {
-                text: `Dưới đây là một số thông tin về thư viện mà bạn có thể sử dụng để trả lời người dùng:
-                ${JSON.stringify(LIBRARY_DATA)}`
-            },
-            {
-                text: has_books ? `Dưới đây là danh sách các sách hiện có trong thư viện:
-                ${JSON.stringify(await booksData.value)}` : 'Tôi không có quyền trích xuất dữ liệu về sách!'
-            },
-            {
-                text: borrow_data ? `Dưới đây là thông tin mượn trả của người dùng:
-                ${JSON.stringify(await borrowData.value)}` : 'Tôi không có quyền trích xuất dữ liệu về mượn trả!'
-            },
-            {
-                text: `Hãy cố gắng trả lời người dùng một cách hoàn hảo nhất có thể dựa trên các thông tin sau:
-                ${JSON.stringify(PERFECT_RESPONSE)}`
-            },
-            {
-                text: `Nếu người dùng mô tả về một loại sách mà họ không biết cụ thể **HÃY LÀM NHƯ SAU:**
-                ${JSON.stringify(SUPPORT_ANOTHER_BOOKS)}`
-            },
-            {
-                text: lab_borrows ? `Dưới đây là thông tin mượn trả của thư viện **TUYỆT ĐỐI** không cung cấp thông tin người dùng khác cho người dùng hiện tại:
-                ${JSON.stringify(await labBorrowsData.value)}` : 'Tôi không có quyền trích xuất dữ liệu về mượn trả của thư viện!'
-            },
-            { text: short_response ? `**TRẢ LỜI NGẮN GỌN**.` : '' }
-        ]
-        }
-    ],
-    system_instruction: {
-        parts: [
-            {
-                text: `Bạn LÀ một trợ lý AI chuyên gia về thư viện, tên là 'Mọt'.
-                BẠN PHẢI TUÂN THỦ NGHIÊM NGẶT CÁC QUY TẮC SAU:
-                1.  **CHỈ ĐƯỢC PHÉP** thảo luận về các chủ đề liên quan đến sách, tác giả, và tác phẩm văn học.
-                2.  **BẮT BUỘC** sử dụng tiếng Việt.
-                3.  Với **BẤT KỲ** câu hỏi nào không thuộc chủ đề cho phép ở quy tắc 1, bạn **PHẢI** trả lời chính xác bằng câu: "Tôi là Mọt, tôi chỉ có thể hỗ trợ các vấn đề về sách vở."
-                4.  **KHÔNG** được thêm bất kỳ thông tin nào khác ngoài câu trả lời ở quy tắc 3 khi từ chối.`
-            }
-        ]
-    }
+        });
         
-    });
-    return response.text;
+        const borrowData = computed(async() => {
+            if(borrow_data) {
+                const account = getAccountData();
+                if(!account || !account.MADOCGIA) {
+                    return null;
+                }
+                const rs = await getBorrowWithUserId(account.MADOCGIA);
+                const detailedBorrows = await Promise.all(rs.data.map(async(borrow) => {
+                    const info = await getBorrowInfo(borrow.MAPHIEU);
+                    return info;
+                }));
+                return detailedBorrows;
+            } else {
+                return [];
+            }
+        });
+
+        const labBorrowsData = computed(async() => {
+            if(lab_borrows) {
+                const allInfoBorrows = await getAllBorrowsInfo();
+                const configData = allInfoBorrows.data?.map(borrow => {
+                    return {
+                        MA_BANSAO: borrow.MA_BANSAO,
+                        NGAYMUON: borrow.NGAYMUON,
+                        NGAYTRA: borrow.NGAYTRA,
+                        TINHTRANG: borrow.TINHTRANG
+                    }
+                });
+                return configData;
+            } else {
+                return [];
+            }
+        });
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: [
+            {
+            role: "user",
+            parts: [
+                { text: message },
+                {
+                    text: `Cho biết ngày hiện tại là ${new Date().toLocaleDateString()}.`
+                },
+                {
+                    text: `Hãy tuân thủ các quy tắc sau khi trả lời người dùng:
+                    ${JSON.stringify(RESPONSE_RULES)}`
+                },
+                {
+                    text: `Dưới đây là một số thông tin về thư viện mà bạn có thể sử dụng để trả lời người dùng:
+                    ${JSON.stringify(LIBRARY_DATA)}`
+                },
+                {
+                    text: has_books ? `Dưới đây là danh sách các sách hiện có trong thư viện:
+                    ${JSON.stringify(await booksData.value)}` : 'Tôi không có quyền trích xuất dữ liệu về sách!'
+                },
+                {
+                    text: borrow_data ? `Dưới đây là thông tin mượn trả của người dùng:
+                    ${JSON.stringify(await borrowData.value)}` : 'Tôi không có quyền trích xuất dữ liệu về mượn trả!'
+                },
+                {
+                    text: `Hãy cố gắng trả lời người dùng một cách hoàn hảo nhất có thể dựa trên các thông tin sau:
+                    ${JSON.stringify(PERFECT_RESPONSE)}`
+                },
+                {
+                    text: `Nếu người dùng mô tả về một loại sách mà họ không biết cụ thể **HÃY LÀM NHƯ SAU:**
+                    ${JSON.stringify(SUPPORT_ANOTHER_BOOKS)}`
+                },
+                {
+                    text: lab_borrows ? `Dưới đây là thông tin mượn trả của thư viện **TUYỆT ĐỐI** không cung cấp thông tin người dùng khác cho người dùng hiện tại:
+                    ${JSON.stringify(await labBorrowsData.value)}` : 'Tôi không có quyền trích xuất dữ liệu về mượn trả của thư viện!'
+                },
+                { text: short_response ? `**TRẢ LỜI NGẮN GỌN**.` : '' }
+            ]
+            }
+        ],
+        system_instruction: {
+            parts: [
+                {
+                    text: `Bạn LÀ một trợ lý AI chuyên gia về thư viện, tên là 'Mọt'.
+                    BẠN PHẢI TUÂN THỦ NGHIÊM NGẶT CÁC QUY TẮC SAU:
+                    1.  **CHỈ ĐƯỢC PHÉP** thảo luận về các chủ đề liên quan đến sách, tác giả, và tác phẩm văn học.
+                    2.  **BẮT BUỘC** sử dụng tiếng Việt.
+                    3.  Với **BẤT KỲ** câu hỏi nào không thuộc chủ đề cho phép ở quy tắc 1, bạn **PHẢI** trả lời chính xác bằng câu: "Tôi là Mọt, tôi chỉ có thể hỗ trợ các vấn đề về sách vở."
+                    4.  **KHÔNG** được thêm bất kỳ thông tin nào khác ngoài câu trả lời ở quy tắc 3 khi từ chối.`
+                }
+            ]
+        }
+            
+        });
+        return response.text;
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 
