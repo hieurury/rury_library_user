@@ -122,16 +122,28 @@ onMounted(async () => {
             }));
         }
 
-        // Nhận phản hồi mượn trả từ AI
+        // Nhận phản hồi mượn trả từ AI với prompt được tối ưu
         AI_RESPONSE.value = await AI.generate({
-            message: `
-Đưa ra thông tin mượn sách của tôi một cách ngắn gọn kiểu sau:
-Số sách đã mượn: x
-**THỐNG KÊ** những cuốn sách còn còn 3 ngày nữa đến hạn trả (NẾU KHÔNG CÓ THÌ CHO BIẾT NGÀY TRẢ GẦN NHẤT).
-**CHO BIẾT** những cuốn sách quá hạn trả (NẾU KHÔNG CÓ THÌ BẢO RẰNG "Không có sách quá hạn").
-**HÃY** đưa ra kết quản trông gọn gàng và dễ hiểu và ngắn gọn.
-**NẾU CÓ THỂ** hãy đưa các thông tin dưới dạng bảng để dễ nhìn hơn. Phân tách từng loại thông tin ra một cách rõ ràng và dễ nhận biết.
-**HÃY DÙNG MARKDOWN** dùng những thứ như (>) hay (***) hay blockquote để mô tả thông tin chi tiết`,
+            message: `Phân tích thông tin mượn sách của tôi và trả về theo định dạng sau:
+
+📊 **TỔNG QUAN**
+- Số sách đang mượn: [số lượng]
+- Tình trạng: [OK/Cần chú ý/Cảnh báo]
+
+⏰ **SẮP ĐẾN HẠN** (còn ≤ 3 ngày)
+[Liệt kê dạng bảng: Tên sách | Ngày trả | Còn lại]
+
+⚠️ **QUÁ HẠN**
+[Liệt kê dạng bảng hoặc thông báo "Không có sách quá hạn"]
+
+💡 **LỜI KHUYÊN**
+[1-2 câu ngắn gọn về việc trả sách]
+
+**YÊU CẦU:**
+- Chỉ trả về thông tin quan trọng
+- Dùng emoji và markdown để dễ nhìn
+- Không thêm lời chào hay giải thích dài dòng
+- Thông tin phải chính xác 100%`,
             borrow_data: true,
             short_response: true
         });
