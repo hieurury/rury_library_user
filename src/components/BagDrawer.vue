@@ -33,6 +33,7 @@ import { getAccountData } from '../hooks/useAccount';
 import { getBookById } from '../services/apiBook';
 import { getUserInfo, getBorrowingCount } from '../services/apiUser';
 import { setBookIds, getBookIds, clearBookIds } from '../hooks/usePayment';
+import FavoriteButton from './FavoriteButton.vue';
 const API_BASE = import.meta.env.VITE_API_BASE;
 const router = useRouter();
 const message = useMessage();
@@ -312,7 +313,8 @@ const handleConfirm = () => {
                         </div>
 
                         <!-- Remove Button -->
-                        <div class="flex-shrink-0">
+                        <div class="flex-shrink-0 flex flex-col gap-1">
+                            <FavoriteButton :book-id="book.MASACH" size="tiny" circle />
                             <NPopconfirm
                                 @positive-click="handleRemove(book.copyId)"
                                 positive-text="Xóa"

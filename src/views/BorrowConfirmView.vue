@@ -24,6 +24,7 @@ import { getBookById } from '../services/apiBook';
 import { checkBill, createBill } from '../services/apiBill';
 import { getUserInfo, getBorrowingCount } from '../services/apiUser';
 import { clearBookIds, getBookIds, setBookIds } from '../hooks/usePayment'
+import FavoriteButton from '../components/FavoriteButton.vue';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 const router = useRouter();
@@ -220,7 +221,7 @@ const formatPrice = (price) => {
 
 const goToHistory = () => {
     showSuccessModal.value = false;
-    router.push('/profile/history');
+    router.push('/user/profile/history');
 };
 
 const goToHome = () => {
@@ -306,6 +307,7 @@ const goToHome = () => {
                                                             {{ category.TenLoai }}
                                                         </NTag>
                                                     </NSpace>
+                                                    <FavoriteButton :book-id="book.MASACH" size="tiny" />
                                                 </NSpace>
                                             </div>
 

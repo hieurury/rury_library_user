@@ -54,17 +54,17 @@ const RESPONSE_RULES = {
         - **MỖI PHẦN** thông tin phải có tiêu đề ngắn gọn và dễ nhận biết.
         - **TỔNG LƯỢNG CHỮ** không quá 150 từ trừ khi dữ liệu yêu cầu nhiều hơn.
         - **VÍ DỤ CẤU TRÚC TỐT:**
-            📊 Số sách: 5
-            ⏰ Sắp đến hạn: 2 cuốn
-            ❌ Quá hạn: 0
-            💡 Lời khuyên: [1 câu ngắn]`
+            Số sách: 5
+            Sắp đến hạn: 2 cuốn
+            Quá hạn: 0
+            > Lời khuyên: [1 câu ngắn]`
 }
 
 
 const PERFECT_RESPONSE = {
     rules: "Nếu người dùng yêu cầu về một loại sách cụ thể và loại sách đó có tồn tại trong dữ liệu thư viện hãy đưa ra một đường dẫn và dẫn họ đến đúng vị trí quyền sách đó với các dữ liệu được cấp cấp dưới đây",
     routes: {
-        get_book: `${DOMAIN}/book/{MASACH}`,
+        get_book: `${DOMAIN}/books/{MASACH}`,
         get_category: `${DOMAIN}/categories/{MaLoai}`,
     }
 }

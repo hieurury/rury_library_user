@@ -27,6 +27,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { getAllBooks, getTopBooks } from '../services/apiBook.js';
 import { getCategories } from '../services/apiCategories.js';
+import FavoriteButton from '../components/FavoriteButton.vue';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 const router = useRouter();
@@ -221,14 +222,12 @@ watch([searchQuery, selectedCategory, selectedYearRange, priceRange, borrowRange
     <!-- Sider - Bộ lọc -->
     <NLayoutSider
       bordered
-      show-trigger
       collapse-mode="width"
-      :collapsed-width="0"
       :width="320"
       :native-scrollbar="false"
       class="bg-white dark:bg-gray-800"
     >
-      <div class="p-6 sticky top-0">
+      <div class="p-6 sticky top-0 bottom-0 overflow-auto">
         <NSpace vertical size="large">
           <!-- Header Sider -->
           <div>
@@ -342,7 +341,7 @@ watch([searchQuery, selectedCategory, selectedYearRange, priceRange, borrowRange
           <!-- Books -->
           <NGi v-else v-for="book in paginatedBooks" :key="book.MASACH" span="1">
                 <NThing 
-                  class="shadow-md rounded-lg hover:shadow-xl transition-shadow duration-200 cursor-pointer"
+                  class="shadow-md rounded-lg hover:shadow-xl dark:border dark:border-gray-700 transition-shadow duration-200 cursor-pointer"
                   @click="router.push(`/book/${book.MASACH}`)"
                 >
                   <template #description>
@@ -367,37 +366,42 @@ watch([searchQuery, selectedCategory, selectedYearRange, priceRange, borrowRange
 
                       <!-- Info -->
                       <NGi span="3">
-                        <NSpace vertical class="p-2">
-                          <!-- Title -->
-                          <NEllipsis :line-clamp="1" class="max-w-full">
-                            <h3 class="text-lg font-semibold">{{ book.TENSACH }}</h3>
-                          </NEllipsis>
-                            <!-- Author -->
-                            <NEllipsis :line-clamp="1" class="text-sm text-gray-500 dark:text-gray-400 max-w-full">
-                                Tác giả: {{ book.TACGIA }} - Nhà xuất bản: {{ book.MAXB.TENNXB }}
-                          </NEllipsis>
-                          <!-- Description -->
-                          <NEllipsis :line-clamp="2" class="text-sm text-gray-600 dark:text-gray-400 max-w-full">
-                            {{ book.MOTA }}
-                          </NEllipsis>
+                        <NSpace vertical justify="space-between" class="p-2 h-full">
+                          <NSpace vertical>
+                              <!-- Title -->
+                            <NEllipsis :line-clamp="1" class="max-w-full">
+                              <h3 class="text-lg font-semibold">{{ book.TENSACH }}</h3>
+                            </NEllipsis>
+                              <!-- Author -->
+                              <NEllipsis :line-clamp="1" class="text-sm text-gray-500 dark:text-gray-400 max-w-full">
+                                  Tác giả: {{ book.TACGIA }} - Nhà xuất bản: {{ book.MAXB.TENNXB }}
+                            </NEllipsis>
+                            <!-- Description -->
+                            <NEllipsis :line-clamp="2" class="text-sm text-gray-600 dark:text-gray-400 max-w-full">
+                              {{ book.MOTA }}
+                            </NEllipsis>
 
-                          <!-- Categories -->
-                          <NSpace>
-                            <NTag
-                              v-for="category in book.THELOAI?.slice(0, 2)"
-                              :key="category.MaLoai"
-                              :color="{ color: category.Color }"
-                              size="small"
-                            >
-                              {{ category.TenLoai }}
-                            </NTag>
+                            <!-- Categories -->
+                            <NSpace>
+                              <NTag
+                                v-for="category in book.THELOAI?.slice(0, 2)"
+                                :key="category.MaLoai"
+                                :color="{ color: category.Color }"
+                                size="small"
+                              >
+                                {{ category.TenLoai }}
+                              </NTag>
+                            </NSpace>
                           </NSpace>
 
                           <!-- Price -->
-                          <NTag type="warning">
-                            <i class="fa-solid fa-tag mr-1"></i>
-                            {{ formatPrice(book.DONGIA) }}
-                          </NTag>
+                          <NSpace justify="space-between" align="end">
+                            <NTag type="warning" class="font-semibold">
+                              <i class="fa-solid fa-tag mr-1"></i>
+                              {{ formatPrice(book.DONGIA) }}
+                            </NTag>
+                            <FavoriteButton :book-id="book.MASACH" size="tiny" circle />
+                          </NSpace>
                         </NSpace>
                       </NGi>
                     </NGrid>

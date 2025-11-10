@@ -39,7 +39,7 @@ const handleDropdownSelect = (key) => {
   if (key === 'home') {
     router.push('/');
   } else if (key === 'ai') {
-    router.push('/test/ai');
+    router.push('/chat/ai');
   } else if (key === 'logout') {
     removeAccountData();
     message.success('Đăng xuất thành công');
@@ -66,7 +66,7 @@ const handleDropdownSelect = (key) => {
                         <template #icon><NIcon><i class="fa-solid fa-home"></i></NIcon></template>
                         Trang chủ
                     </NButton>
-                    <NButton text size="large" @click="router.push('/test/ai')" class="hidden md:flex">
+                    <NButton text size="large" @click="router.push('/chat/ai')" class="hidden md:flex">
                         <template #icon><NIcon><i class="fa-solid fa-robot"></i></NIcon></template>
                         Thủ thư AI
                     </NButton>

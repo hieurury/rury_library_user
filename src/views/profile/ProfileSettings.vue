@@ -21,8 +21,8 @@ import {
     useMessage
 } from 'naive-ui';
 import { useRouter } from 'vue-router';
-import { getAccountData } from '../../hooks/useAccount';
-import { getUserInfo, updateEmailNotification } from '../../services/apiUser';
+import { getAccountData, setAccountData } from '../../hooks/useAccount';
+import { getUserInfo, updateEmailNotification, updateUser, uploadAvatar } from '../../services/apiUser';
 import ProfileSidebar from '../../components/ProfileSidebar.vue';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
@@ -30,8 +30,11 @@ const router = useRouter();
 const message = useMessage();
 
 const loading = ref(false);
+const uploadingAvatar = ref(false);
 const userInfo = ref(null);
 const formRef = ref(null);
+const avatarFile = ref(null);
+const previewUrl = ref(''); // Thêm biến preview
 
 // Form data
 const formValue = reactive({
@@ -91,6 +94,11 @@ onMounted(async () => {
         if (userInfo.value.NGAYSINH) {
             formValue.NGAYSINH = new Date(userInfo.value.NGAYSINH).getTime();
         }
+        
+        // Set initial preview URL
+        previewUrl.value = formValue.AVATAR;
+        
+        console.log(formValue);
     } catch (error) {
         message.error('Không thể tải thông tin người dùng');
     }
@@ -101,25 +109,60 @@ const handleUpdateProfile = async () => {
         await formRef.value?.validate();
         loading.value = true;
 
-        // TODO: Gọi API updateUser khi backend đã implement
-        // const updateData = {
-        //     HOLOT: formValue.HOLOT,
-        //     TEN: formValue.TEN,
-        //     DIENTHOAI: formValue.DIENTHOAI,
-        //     EMAIL: formValue.EMAIL,
-        //     DIACHI: formValue.DIACHI,
-        //     NGAYSINH: new Date(formValue.NGAYSINH),
-        //     PHAI: formValue.PHAI,
-        //     AVATAR: formValue.AVATAR
-        // };
-        // await updateUser(userInfo.value.MADOCGIA, updateData);
+        // Upload avatar trước nếu có
+        if (avatarFile.value) {
+            try {
+                uploadingAvatar.value = true;
+                const avatarResponse = await uploadAvatar(userInfo.value.MADOCGIA, avatarFile.value);
+                if (avatarResponse.status === 'success') {
+                    formValue.AVATAR = avatarResponse.data.avatarPath;
+                }
+            } catch (error) {
+                message.error('Không thể upload ảnh đại diện');
+                throw error;
+            } finally {
+                uploadingAvatar.value = false;
+            }
+        }
 
-        message.success('Cập nhật thông tin thành công!');
+        // Cập nhật thông tin user
+        const updateData = {
+            HOLOT: formValue.HOLOT,
+            TEN: formValue.TEN,
+            DIENTHOAI: formValue.DIENTHOAI,
+            EMAIL: formValue.EMAIL,
+            DIACHI: formValue.DIACHI,
+            NGAYSINH: new Date(formValue.NGAYSINH),
+            PHAI: formValue.PHAI,
+            AVATAR: formValue.AVATAR
+        };
+        
+        const response = await updateUser(userInfo.value.MADOCGIA, updateData);
+        
+        if (response.status === 'success') {
+            message.success('Cập nhật thông tin thành công!');
+            
+            // Cập nhật lại account data trong localStorage
+            const currentAccount = getAccountData();
+            if (currentAccount) {
+                currentAccount.TEN = formValue.TEN;
+                currentAccount.HOLOT = formValue.HOLOT;
+                setAccountData(currentAccount);
+            }
+            
+            // Reload user info
+            const rs = await getUserInfo(userInfo.value.MADOCGIA);
+            userInfo.value = rs.data;
+            avatarFile.value = null; // Reset file
+        } else {
+            message.error('❌ ' + (response.message || 'Không thể cập nhật thông tin'));
+        }
     } catch (error) {
         if (error?.errors) {
-            message.error('Vui lòng kiểm tra lại thông tin');
+            message.error('❌ Vui lòng kiểm tra lại thông tin');
         } else {
-            message.error('Không thể cập nhật thông tin');
+            const errorMsg = error.response?.data?.message || 'Không thể cập nhật thông tin';
+            message.error('❌ ' + errorMsg);
         }
     } finally {
         loading.value = false;
@@ -139,15 +182,38 @@ const handleEmailNotificationChange = async (value) => {
 };
 
 const handleAvatarUpload = ({ file }) => {
-    // TODO: Implement avatar upload
-    // Tạm thời chỉ preview
+    // Kiểm tra file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.file.type)) {
+        message.error('Chỉ chấp nhận file ảnh (JPG, PNG, GIF, WEBP)');
+        return false;
+    }
+    
+    // Kiểm tra file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.file.size > maxSize) {
+        message.error('Kích thước ảnh không được vượt quá 5MB');
+        return false;
+    }
+    
+    // Lưu file để upload sau
+    avatarFile.value = file.file;
+    
+    // Tạo preview URL
     const reader = new FileReader();
     reader.onload = (e) => {
-        formValue.AVATAR = e.target.result;
-        message.info('Tính năng upload ảnh sẽ được cập nhật sau');
+        previewUrl.value = e.target.result;
     };
     reader.readAsDataURL(file.file);
+    
     return false; // Prevent default upload
+};
+
+// Reset avatar về ảnh gốc
+const resetAvatar = () => {
+    avatarFile.value = null;
+    previewUrl.value = formValue.AVATAR;
+    message.info('Đã hủy chọn ảnh mới');
 };
 </script>
 
@@ -173,23 +239,43 @@ const handleAvatarUpload = ({ file }) => {
                     <!-- Avatar Section -->
                     <NFormItem label="Ảnh đại diện" path="AVATAR">
                         <NSpace align="center" :size="16">
-                            <NAvatar
-                                round
-                                :size="80"
-                                :src="formValue.AVATAR"
-                            />
-                            <NUpload
-                                :custom-request="handleAvatarUpload"
-                                :show-file-list="false"
-                                accept="image/*"
-                            >
-                                <NButton size="small">
+                            <div class="relative">
+                                <img class="w-20 h-20 overflow-hidden rounded-full object-cover" :src="`${API_BASE}${userInfo?.AVATAR}`" alt="">
+                                <div 
+                                    v-if="avatarFile" 
+                                    class="absolute -top-1 -right-1 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow-lg"
+                                >
+                                    <NIcon><i class="fa-solid fa-check"></i></NIcon>
+                                </div>
+                            </div>
+                            <NSpace vertical :size="8">
+                                <NUpload
+                                    :custom-request="handleAvatarUpload"
+                                    :show-file-list="false"
+                                    accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
+                                >
+                                    <NButton size="small" type="primary">
+                                        <template #icon>
+                                            <NIcon><i class="fa-solid fa-camera"></i></NIcon>
+                                        </template>
+                                        Chọn ảnh mới
+                                    </NButton>
+                                </NUpload>
+                                <NButton 
+                                    v-if="avatarFile"
+                                    size="small" 
+                                    @click="resetAvatar"
+                                    secondary
+                                >
                                     <template #icon>
-                                        <NIcon><i class="fa-solid fa-camera"></i></NIcon>
+                                        <NIcon><i class="fa-solid fa-rotate-left"></i></NIcon>
                                     </template>
-                                    Đổi ảnh
+                                    Hủy
                                 </NButton>
-                            </NUpload>
+                                <div class="text-xs text-gray-400">
+                                    JPG, PNG, GIF, WEBP. Tối đa 5MB
+                                </div>
+                            </NSpace>
                         </NSpace>
                     </NFormItem>
 
@@ -240,7 +326,7 @@ const handleAvatarUpload = ({ file }) => {
                         />
                     </NFormItem>
 
-                    <NFormItem label="Email" path="EMAIL">
+                    <NFormItem label="Email">
                         <NInput
                             v-model:value="formValue.EMAIL"
                             placeholder="Nhập email"
@@ -282,17 +368,22 @@ const handleAvatarUpload = ({ file }) => {
                     <!-- Actions -->
                     <NSpace justify="end" :size="12">
                         <NButton @click="router.push('/user/profile/overview')">
+                            <template #icon>
+                                <NIcon><i class="fa-solid fa-xmark"></i></NIcon>
+                            </template>
                             Hủy
                         </NButton>
                         <NButton
                             type="primary"
-                            :loading="loading"
+                            :loading="loading || uploadingAvatar"
+                            :disabled="loading || uploadingAvatar"
                             @click="handleUpdateProfile"
+                            strong
                         >
                             <template #icon>
                                 <NIcon><i class="fa-solid fa-floppy-disk"></i></NIcon>
                             </template>
-                            Lưu thay đổi
+                            {{ uploadingAvatar ? 'Đang upload ảnh...' : loading ? 'Đang lưu...' : 'Lưu thay đổi' }}
                         </NButton>
                     </NSpace>
                 </NForm>

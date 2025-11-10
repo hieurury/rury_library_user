@@ -33,6 +33,10 @@ const router = useRouter();
 const accountData = ref(getAccountData());
 const isLoggedIn = computed(() => accountData.value !== null);
 
+const isHomeView = computed(() => router.currentRoute.value.path === '/');
+const isBookView = computed(() => router.currentRoute.value.path.startsWith('/books'));
+const isChatAIView = computed(() => router.currentRoute.value.path.startsWith('/chat'));
+
 // Function to render icon
 const renderIcon = (iconClass) => {
   return () => h(NIcon, null, { default: () => h('i', { class: iconClass }) });
@@ -100,7 +104,7 @@ const handleDropdownSelect = (key) => {
                     <router-link 
                         to="/" 
                         class="px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                        active-class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                        :class="{ 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400': isHomeView }"
                     >
                         <NIcon class="mr-1"><i class="fa-solid fa-home"></i></NIcon>
                         Trang chủ
@@ -108,15 +112,15 @@ const handleDropdownSelect = (key) => {
                     <router-link 
                         to="/books" 
                         class="px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                        active-class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                        :class="{ 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400': isBookView }"
                     >
                         <NIcon class="mr-1"><i class="fa-solid fa-book"></i></NIcon>
                         Sách
                     </router-link>
                     <router-link 
-                        to="/test/ai" 
+                        to="/chat/ai" 
                         class="px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                        active-class="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                        :class="{ 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400': isChatAIView }"
                     >
                         <NIcon class="mr-1"><i class="fa-solid fa-robot"></i></NIcon>
                         Thủ thư AI

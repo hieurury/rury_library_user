@@ -66,7 +66,7 @@ const router = useRouter();
                             <NIcon class="mr-2"><i class="fa-solid fa-book"></i></NIcon>
                             Sách
                         </RouterLink>
-                        <RouterLink to="/test/ai" class="text-sm hover:text-white transition-colors block">
+                        <RouterLink to="/chat/ai" class="text-sm hover:text-white transition-colors block">
                             <NIcon class="mr-2"><i class="fa-solid fa-robot"></i></NIcon>
                             Thủ thư AI
                         </RouterLink>

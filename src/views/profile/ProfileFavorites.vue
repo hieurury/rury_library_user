@@ -121,16 +121,15 @@ const handleViewBook = (bookId) => {
                 </template>
             </NEmpty>
 
-            <NGrid v-else cols="1 s:2 m:3 l:4 xl:5" x-gap="16" y-gap="16">
-                <NGi v-for="book in favorites" :key="book.MASACH">
+            <NGrid v-else cols="4" x-gap="16" y-gap="16">
+                <NGi span="1" v-for="book in favorites" :key="book.MASACH">
                     <NCard class="h-full hover:shadow-lg transition-shadow duration-300" :bordered="true">
                         <div class="flex flex-col h-full">
                             <!-- Book Image -->
-                            <div class="relative mb-3">
+                            <div class="relative mb-3 flex justify-center flex-col">
                                 <NImage
                                     :src="`${API_BASE}${book.HINHANH}`"
                                     :alt="book.TENSACH"
-                                    class="w-full h-64 object-cover rounded-md"
                                     :fallback-src="'/books/default-book.png'"
                                 />
                                 <NTag 

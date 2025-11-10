@@ -34,9 +34,9 @@ const loading = ref(false);
 const chatHistoryRef = ref(null);
 
 // AI Configuration toggles
-const enableBooks = ref(false);
-const enableBorrowData = ref(false);
-const enableLabBorrows = ref(false);
+const enableBooks = ref(true);
+const enableBorrowData = ref(true);
+const enableLabBorrows = ref(true);
 
 // Suggested questions
 const suggestedQuestions = [

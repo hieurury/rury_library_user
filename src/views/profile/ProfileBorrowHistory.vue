@@ -24,6 +24,7 @@ import {
 import { getAccountData } from '../../hooks/useAccount';
 import { getBillsByDocGia, getBillById, cancelBill } from '../../services/apiBill';
 import { useRouter } from 'vue-router';
+import FavoriteButton from '../../components/FavoriteButton.vue';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 const router = useRouter();
@@ -330,7 +331,7 @@ const renderTINHTRANG = (status) => {
                     <NSpin size="large" />
                 </div>
 
-                <NSpace v-else-if="selectedBill" vertical :size="20">
+                <NSpace v-else-if="!selectedBill.BIHUY" vertical :size="20">
                     <!-- Bill Info -->
                     <NCard title="Thông tin bill" :bordered="true" size="small">
                         <NDescriptions label-placement="left" :column="1" size="small" bordered>
@@ -379,8 +380,7 @@ const renderTINHTRANG = (status) => {
                                         <NImage
                                             :src="`${API_BASE}${phieu.SACH?.HINHANH}`"
                                             :alt="phieu.SACH?.TENSACH"
-                                            width="60"
-                                            height="90"
+                                            width="100%"
                                             object-fit="cover"
                                             class="rounded"
                                         />
@@ -410,12 +410,15 @@ const renderTINHTRANG = (status) => {
                                                     Đã trả: {{ formatDate(phieu.NGAYTRA) }}
                                                 </div>
                                             </div>
-                                            <NTag
-                                                size="small"
-                                                :type="renderTINHTRANG(phieu.TINHTRANG).type"
-                                            >
-                                                {{ renderTINHTRANG(phieu.TINHTRANG).status }}
-                                            </NTag>
+                                            <NSpace :size="4" align="center">
+                                                <NTag
+                                                    size="small"
+                                                    :type="renderTINHTRANG(phieu.TINHTRANG).type"
+                                                >
+                                                    {{ renderTINHTRANG(phieu.TINHTRANG).status }}
+                                                </NTag>
+                                                <FavoriteButton :book-id="phieu.SACH?.MASACH" size="tiny" circle />
+                                            </NSpace>
                                         </NSpace>
                                     </NGi>
                                 </NGrid>
@@ -452,6 +455,9 @@ const renderTINHTRANG = (status) => {
                             </NPopconfirm>
                         </NSpace>
                     </NCard>
+                </NSpace>
+                <NSpace justify="center" v-else-if="selectedBill.BIHUY">
+                    <NEmpty description="Đơn mượn sách đã bị hủy" size="small" />
                 </NSpace>
             </NDrawerContent>
         </NDrawer>

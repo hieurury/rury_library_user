@@ -16,7 +16,7 @@ import ProfileOverview          from "../views/profile/ProfileOverview.vue";
 import ProfileFavorites         from "../views/profile/ProfileFavorites.vue";
 import ProfileSettings          from "../views/profile/ProfileSettings.vue";
 import ProfileBorrowHistory     from "../views/profile/ProfileBorrowHistory.vue";
-import TestAIView               from "../views/TestAIView.vue";
+import AILibrarian               from "../views/AILibrarian.vue";
 import BookDetail               from "../views/BookDetail.vue";
 import BooksView                from "../views/BooksView.vue";
 import BorrowConfirmView        from "../views/BorrowConfirmView.vue";
@@ -124,14 +124,14 @@ const router = [
         ]
     },
     {
-        path: '/test',
-        name: 'Test',
+        path: '/chat',
+        name: 'chat',
         component: NoneLayout,
         children: [
             {
                 path: 'ai',
-                name: 'TestAI',
-                component: TestAIView
+                name: 'chatAI',
+                component: AILibrarian
             }
         ]
     },
@@ -156,7 +156,7 @@ const routes = createRouter({
 })
 
 routes.beforeEach((to, from, next) => {
-    const publicPages = ['/', '/auth/login', '/auth/register', '/vnpay/return'];
+    const publicPages = ['/', '/auth/login', '/auth/register', '/books'];
     const authRequired = !publicPages.includes(to.path);
     const loggedIn = getAccountData() !== null;
 

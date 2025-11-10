@@ -87,13 +87,30 @@ const handleClick = async () => {
         :loading="loading"
         @click.stop="handleClick"
         :secondary="!isFavorite"
+        :quaternary="!isFavorite && circle"
         :title="isFavorite ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'"
+        :class="{'favorite-button': true, 'is-favorite': isFavorite}"
     >
         <template #icon>
-            <NIcon>
-                <i :class="isFavorite ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
+            <NIcon :size="circle ? 16 : undefined" class="dark:text-yellow-700">
+                <i :class="isFavorite ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
             </NIcon>
         </template>
-        <slot>{{ isFavorite ? 'Đã thích' : 'Yêu thích' }}</slot>
+        <slot v-if="!circle">{{ isFavorite ? 'Đã thích' : 'Yêu thích' }}</slot>
     </NButton>
 </template>
+
+<style scoped>
+.favorite-button.is-favorite {
+    animation: pulse 0.3s ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+</style>

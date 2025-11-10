@@ -181,6 +181,44 @@ const deleteAllNotifications = async () => {
     }
 };
 
+// Cập nhật thông tin người dùng
+const updateUser = async (MADOCGIA, userData) => {
+    try {
+        const url = `${API_BASE}/user/update/${MADOCGIA}`;
+        const response = await axios.put(url, 
+            userData,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Upload avatar
+const uploadAvatar = async (MADOCGIA, file) => {
+    try {
+        const formData = new FormData();
+        formData.append('avatar', file);
+        
+        const url = `${API_BASE}/user/upload-avatar/${MADOCGIA}`;
+        const response = await axios.post(url, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
 export { 
     registerAccount, 
     loginccount, 
@@ -192,5 +230,7 @@ export {
     getNotifications,
     markNotificationAsRead,
     markAllNotificationsAsRead,
-    deleteAllNotifications
+    deleteAllNotifications,
+    updateUser,
+    uploadAvatar
 };

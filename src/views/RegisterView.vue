@@ -43,7 +43,7 @@ const message = useMessage();
 
 onMounted(async () => {
     allPackages.value           =   await getAllPackages();
-    currentListPackages.value   =   allPackages.value.data?.sort((a, b) => a.Gia - b.Gia);
+    currentListPackages.value   =   allPackages.value.data?.filter(pack => pack.Gia === 0).sort((a, b) => a.Gia - b.Gia);
     selectedPackage.value       =   currentListPackages.value[0]?.MaGoi || '';
 });
 
@@ -59,103 +59,58 @@ const dataPackage           =   computed(() => {
 
 
 
-
-const themeLight = {
-    Input: {
-        textColor: '#ffffff',
-        placeholderTextColor: 'rgba(255,255,255,0.5)',
-        color: 'rgba(255,255,255,0.08)',          // nền bình thường
-        colorFocus: 'rgba(255,255,255,0.12)',     // nền khi focus
-        colorError: 'rgba(255,255,255,0.08)',     // nền khi có lỗi
-        colorFocusError: 'rgba(255,255,255,0.12)',// nền khi có lỗi và focus
-        borderColor: 'rgba(255,255,255,0.4)',
-        borderColorHover: 'rgba(255,255,255,0.7)',
-        borderColorFocus: '#ffffff',
-        borderColorError: '#ff4d4f',               // đỏ lỗi
-        borderColorFocusError: '#ff4d4f',          // đỏ lỗi khi focus
-        boxShadowFocus: '0 0 0 2px rgba(255,255,255,0.2)',
-        boxShadowFocusError: '0 0 0 2px rgba(255,0,0,0.3)' // bóng đỏ khi lỗi
+const themeOverrides = {
+    common: {
+        primaryColor: '#8b5cf6',
+        primaryColorHover: '#a78bfa',
+        primaryColorPressed: '#7c3aed',
+    },
+    Steps: {
+        headerTextColor: '#ffffff',
+        indicatorTextColorFinish: '#ffffff',
+        indicatorTextColorProcess: '#ffffff',
+        headerTextColorProcess: '#8b5cf6', // màu tím cho bước hiện tại
+        headerTextColorFinish: '#ffffff',
+        headerTextColorWait: '#ffffff',
     },
     Form: {
-        color: '#fff',
-        borderColor: 'rgba(255, 255, 255, 0.24)',
-        placeholderColor: 'rgba(255, 255, 255, 0.38)',
-        hoverBorderColor: '#6b7280',
-        focusBorderColor: '#2563eb',
-        disabledColor: 'rgba(255, 255, 255, 0.06)',
-        disabledBorderColor: 'rgba(255, 255, 255, 0.24)',
-        disabledBgColor: 'rgba(255, 255, 255, 0.06)',
-        labelTextColor: '#fff',
-        colorStateful: '#fff'
-    },
-    Radio: {
-        textColor: '#fff',            // nền mặc định
-        buttonColorActive: 'purple',          // nền tím khi chọn
-        buttonBorderColorActive: '#fff',     // viền trắng khi chọn
-        buttonTextColor: '#fff',            // chữ trắng mặc định
-        buttonTextColorActive: '#fff',     // chữ trắng khi chọn
-        buttonTextColorHover: '#fff',     // chữ trắng khi hover
-        buttonColorHover: '#fff',        // nền khi hover
-        buttonBoxShadowFocus: 'none',   // bỏ viền xanh khi focus
-        labelTextColor: '#fff',
-    },
-    // Radio: {
-    //   textColor: '#ffffff',            // màu chữ Radio thường
-    //   textColorDisabled: 'rgba(255,255,255,0.4)',
-    //   labelTextColor: '#ffffff'        // (nếu bạn muốn chắc chắn text luôn trắng)
-    // },
-    RadioButton: {
-      textColor: '#6b21a8',            // màu chữ tím cho RadioButton (bình thường)
-      textColorHover: '#9333ea',       // tím nhạt khi hover
-      textColorFocus: '#a855f7',       // tím sáng khi focus
-      textColorPressed: '#7e22ce',     // tím đậm khi nhấn
-      textColorDisabled: 'rgba(255,255,255,0.4)',
-      borderColor: '#a855f7',
-      borderColorHover: '#c084fc',
-      colorActive: '#7e22ce',          // nền của RadioButton khi chọn
-      colorActiveHover: '#9333ea',     
-      textColorActive: '#ffffff',      // chữ trắng khi được chọn
-    }
-
-}
-
-const themeDark = {
-    Input: {
-        color: 'rgba(255, 255, 255, 0.1)',          // nền mặc định
-        colorHover: 'rgba(255, 255, 255, 0.15)',    // khi hover
-        colorFocus: 'rgba(255, 255, 255, 0.2)',     // khi focus
-        colorDisabled: 'rgba(255, 255, 255, 0.06)', // khi disabled
-        textColor: '#fff',
-        placeholderColor: 'rgba(255, 255, 255, 0.38)',
-        borderColor: 'rgba(255, 255, 255, 0.24)',
-        borderHover: '#6b7280',
-        borderFocus: '#2563eb'
+        labelTextColor: '#ffffff',
+        asteriskColor: '#8b5cf6',
     },
     FormItem: {
-        color: '#ffffff',
-        borderColor: 'rgba(255, 255, 255, 0.24)',
-        placeholderColor: 'rgba(255, 255, 255, 0.38)',
-        hoverBorderColor: '#6b7280',
-        focusBorderColor: '#2563eb',
-        disabledColor: 'rgba(255, 255, 255, 0.06)',
-        disabledBorderColor: 'rgba(255, 255, 255, 0.24)',
-        disabledBgColor: 'rgba(255, 255, 255, 0.06)'
+        feedbackTextColorError: '#dc2626',
+        feedbackTextColorWarning: '#f59e0b',
+    },
+    Input: {
+        color: 'rgba(255, 255, 255, 0.15)',
+        colorFocus: 'rgba(255, 255, 255, 0.22)',
+        textColor: '#ffffff',
+        placeholderColor: 'rgba(255, 255, 255, 0.6)',
+        border: '1px solid rgba(255, 255, 255, 0.3)',
+        borderHover: '1px solid rgba(255, 255, 255, 0.5)',
+        borderFocus: '1px solid #8b5cf6',
+        boxShadowFocus: '0 0 0 2px rgba(139, 92, 246, 0.2)'
+    },
+    DatePicker: {
+        itemTextColor: '#1f2937',
+        itemColorActive: '#8b5cf6',
+        panelColor: '#ffffff',
+        itemTextColorActive: '#ffffff',
     },
     Radio: {
-        buttonColor: 'transparent',            // nền mặc định
-        buttonColorActive: 'purple',          // nền tím khi chọn
-        buttonBorderColorActive: '#fff',     // viền trắng khi chọn
-        buttonTextColor: '#fff',            // chữ trắng mặc định
-        buttonTextColorActive: '#fff',     // chữ trắng khi chọn
-        buttonTextColorHover: '#fff',     // chữ trắng khi hover
-        buttonColorHover: '#fff',        // nền khi hover
-        buttonBoxShadowFocus: 'none',   // bỏ viền xanh khi focus
+        textColor: '#ffffff',
+        buttonTextColorActive: '#fff',
+        buttonColorActive: '#8b5cf6',
+        dotColorActive: '#8b5cf6',
+        buttonBorderColorActive: '1px solid #8b5cf6',
+    },
+    RadioGroup: {
+        buttonTextColor: '#ffffff',
     },
 }
-
 //==========> Liên quan đến Steps
 
-const currentRef = ref(1);
+const currentRef = ref(2);
 const currentStatus = computed(() => {
     switch (currentRef.value) {
         case 1:
@@ -304,7 +259,7 @@ const checkForm2 = () => {
 
 
 <template>
-    <NConfigProvider :theme-overrides="isDark ? themeDark : themeLight">
+    <NConfigProvider :theme-overrides="themeOverrides">
         <NSpace vertical justify="center" align="center" class="min-h-screen">
             <NSpace align="center" class="mb-4 absolute left-4 top-4">
                 <NImage class="rounded-full overflow-hidden shadow-md" width="80" src="/logo-nobg.png" />
@@ -323,7 +278,7 @@ const checkForm2 = () => {
                     <NForm class="rounded-md p-4 shadow-lg" ref="form1Ref" :model="form1Data" :rules="form1Rules">
                         <NGrid cols="2" x-gap="12" y-gap="12">
                             <NGi span="1">
-                                <NFormItem label="Họ">
+                                <NFormItem label="Họ" class="custom-form-item-label">
                                     <NInput v-model:value="form1Data.firstName" class="min-w-xs" type="text" placeholder="Nhập họ của bạn"/>
                                 </NFormItem>
                             </NGi>
@@ -368,14 +323,14 @@ const checkForm2 = () => {
                         <NGi span="1">
                             <NSpace vertical align="center" justify="center">
                                 <NForm class="rounded-md p-4 shadow-lg" ref="form2Ref" :model="form2Data" :rules="form2Rules">
-                                    <NFormItem label="Email" path="email">
-                                        <NInput class="min-w-xs" type="email" v-model:value="form2Data.email" />
+                                    <NFormItem label="Email">
+                                        <NInput class="min-w-xs" type="email" v-model:value="form2Data.email" placeholder="Nhập email của bạn"/>
                                     </NFormItem>
-                                    <NFormItem label="Password" path="password">
-                                        <NInput class="min-w-xs" type="password" v-model:value="form2Data.password" />
+                                    <NFormItem label="Mật khẩu" path="password">
+                                        <NInput class="min-w-xs" type="password" v-model:value="form2Data.password" placeholder="Vui lòng nhập mật khẩu"/>
                                     </NFormItem>
-                                    <NFormItem label="Confirm Password" path="confirmPassword">
-                                        <NInput class="min-w-xs" type="password" v-model:value="form2Data.confirmPassword" />
+                                    <NFormItem label="Xác nhận mật khẩu" path="confirmPassword">
+                                        <NInput class="min-w-xs" type="password" v-model:value="form2Data.confirmPassword" placeholder="Xác nhận lại mật khẩu"/>
                                     </NFormItem>
                                     <NButton @click="checkForm2" class="min-w-xs" color="rgb(136, 8, 136)">Đăng ký</NButton>
                                 </NForm>
@@ -398,7 +353,8 @@ const checkForm2 = () => {
                                         <BookMarkControll :img="dataPackage?.HuyHieu" :children="{width: '40px'}" :position="{top: '0px', right: '0px'}" />
                                     </template>
                                 </NThing>
-                                <h1 class="text-xl uppercase font-semibold text-slate-300">Chọn gói thành viên</h1>
+                                <!-- <h1 class="text-xl uppercase font-semibold text-slate-300">Chọn gói thành viên</h1> -->
+                                <p class="max-w-sm text-center italic text-orange-500">Chức năng chọn gói cao cấp hiện chưa khả dụng!</p>
                                 <NRadioGroup v-model:value="selectedPackage">
                                     <NRadioButton 
                                     v-for="pack in currentListPackages" 
@@ -423,7 +379,7 @@ const checkForm2 = () => {
                                 <NGrid cols="3">
                                     <NGi span="1">
                                         <NSpace justify="center" align="center" class="h-full">
-                                            <NImage class="rounded-full overflow-hidden shadow-md" width="120" round src="/logo.png" />
+                                            <NImage class="rounded-full overflow-hidden shadow-md" width="120" round src="/users/default-avatar.svg" />
                                         </NSpace>
                                     </NGi>
                                     <NGi span="2">
@@ -446,7 +402,6 @@ const checkForm2 = () => {
                         </NThing>
                     </NSpace>
                     <NDivider />
-                    <NButton @click="setCurrentStep(1)" class="min-w-xs custom-register-btn">Đăng nhập ngay</NButton>
                 </NSpace>
                 <NDivider />
                 <NSpace justify="end">
@@ -476,6 +431,10 @@ const checkForm2 = () => {
 }
 .custom-register-btn:hover {
     background: rgb(136, 8, 136);
+    color: white;
+}
+
+.custom-form-item-label .n-form-item-label {
     color: white;
 }
 </style>

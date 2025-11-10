@@ -231,8 +231,7 @@ const getFeaturedCategories = () => {
           <NGrid v-else-if="topCategories && topCategories.length > 0" cols="3" x-gap="24" y-gap="24" class="w-full px-8 max-w-6xl">
             <NGi v-if="topCategories && topCategories.length" v-for="(category, index) in topCategories" :key="category.MaLoai" span="1">
               <NCard 
-                hoverable 
-                class="relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2"
+                class="relative overflow-hidden transition-all duration-300 hover:shadow-2xl cursor-pointer h-full"
                 :style="{ borderTop: `4px solid ${category.Color || '#18a058'}` }"
               >
                 <!-- Badge số thứ hạng -->
@@ -281,18 +280,11 @@ const getFeaturedCategories = () => {
                   <!-- Số lượt mượn -->
                   <NSpace align="center" class="w-full" justify="center">
                     <NIcon size="20" :color="category.Color || '#18a058'">
-                      <i class="fa-solid fa-heart"></i>
+                      <i class="fa-solid fa-fire"></i>
                     </NIcon>
-                    <NStatistic>
-                      <template #label>
-                        <span class="text-sm text-gray-500 dark:text-gray-400">Lượt mượn</span>
-                      </template>
-                      <template #default>
-                        <span class="text-2xl font-bold" :style="{ color: category.Color || '#18a058' }">
-                          {{ category.BorrowCount || 0 }}
-                        </span>
-                      </template>
-                    </NStatistic>
+                    <span class="text-2xl font-bold" :style="{ color: category.Color || '#18a058' }">
+                        {{ category.BorrowCount || 0 }}
+                    </span>
                   </NSpace>
                 </NSpace>
               </NCard>
@@ -307,7 +299,7 @@ const getFeaturedCategories = () => {
           class="py-12 w-full min-h-screen bg-gradient-to-b from-transparent to-gray-50 dark:to-gray-900"
         >
           <h1 class="text-3xl uppercase font-semibold my-4">Top sách mượn nhiều nhất</h1>
-          <p class="text-gray-500 dark:text-gray-400 mb-8">6 đầu sách được độc giả yêu thích</p>
+          <p class="text-gray-500 dark:text-gray-400 mb-8">Các sách được đánh giá cao về chất lượng</p>
           
           <!-- Skeleton Loading -->
           <NGrid v-if="loadingBooks" cols="3" x-gap="24" y-gap="24" class="w-full px-8 max-w-7xl">
@@ -486,7 +478,7 @@ const getFeaturedCategories = () => {
                     class="h-full group bg-white dark:bg-gray-800 shadow-md rounded-lg cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all hover:shadow-xl"
                     @click="router.push(`/book/${book.MASACH}`)"
                   >
-                    <NGrid :cols="5" x-gap="8" y-gap="8">
+                    <NGrid :cols="5" x-gap="8" y-gap="8" class="h-full">
                       <!-- Book Image - 2 cột -->
                       <NGi span="2" class="relative">
                         <div 
@@ -497,37 +489,35 @@ const getFeaturedCategories = () => {
                       
                       <!-- Book Info - 3 cột -->
                       <NGi span="3">
-                        <NThing>
-                          <template #description>
-                            <!-- Title -->
-                            <NEllipsis :line-clamp="2" class="mb-1">
-                              <h3 class="text-sm font-semibold">{{ book.TENSACH }}</h3>
-                            </NEllipsis>
-                            
-                            <!-- Author -->
-                            <NText class="text-xs text-gray-500 dark:text-gray-400 block mb-2">
-                              <i class="fa-solid fa-user mr-1"></i>
-                              {{ book.TACGIA }}
-                            </NText>
-                            
-                            <!-- Description -->
-                            <NEllipsis :line-clamp="2" class="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                              {{ book.MOTA }}
-                            </NEllipsis>
+                          <NSpace vertical justify="space-between" class="h-full">
+                            <NSpace vertical>
+                              <!-- Title -->
+                              <NEllipsis :line-clamp="2" class="mb-1">
+                                <h3 class="text-sm font-semibold">{{ book.TENSACH }}</h3>
+                              </NEllipsis>
+                              
+                              <!-- Author -->
+                              <NText class="text-xs text-gray-500 dark:text-gray-400 block mb-2">
+                                <i class="fa-solid fa-user mr-1"></i>
+                                {{ book.TACGIA }}
+                              </NText>
+                              
+                              <!-- Description -->
+                              <NEllipsis :line-clamp="2" class="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                                {{ book.MOTA }}
+                              </NEllipsis>
+                            </NSpace>
                             
                             <!-- Price -->
-                            <NTag type="warning" size="small">
-                              <i class="fa-solid fa-tag mr-1"></i>
-                              {{ formatPrice(book.DONGIA || book.GIABAN || 0) }}
-                            </NTag>
                             
-                            <!-- Action Buttons -->
-                            <NDivider class="!my-2" />
-                            <NSpace :size="4">
+                            <NSpace justify="space-between" :size="4">
+                              <NTag type="warning" size="small">
+                                <i class="fa-solid fa-tag mr-1"></i>
+                                {{ formatPrice(book.DONGIA || book.GIABAN || 0) }}
+                              </NTag>
                               <FavoriteButton :book-id="book.MASACH" size="tiny" circle />
                             </NSpace>
-                          </template>
-                        </NThing>
+                          </NSpace>
                       </NGi>
                     </NGrid>
                   </NCard>

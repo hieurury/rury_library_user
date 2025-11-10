@@ -126,17 +126,17 @@ onMounted(async () => {
         AI_RESPONSE.value = await AI.generate({
             message: `Phân tích thông tin mượn sách của tôi và trả về theo định dạng sau:
 
-📊 **TỔNG QUAN**
+**TỔNG QUAN**
 - Số sách đang mượn: [số lượng]
 - Tình trạng: [OK/Cần chú ý/Cảnh báo]
 
-⏰ **SẮP ĐẾN HẠN** (còn ≤ 3 ngày)
+**SẮP ĐẾN HẠN**
 [Liệt kê dạng bảng: Tên sách | Ngày trả | Còn lại]
 
-⚠️ **QUÁ HẠN**
+**QUÁ HẠN**
 [Liệt kê dạng bảng hoặc thông báo "Không có sách quá hạn"]
 
-💡 **LỜI KHUYÊN**
+**LỜI KHUYÊN**
 [1-2 câu ngắn gọn về việc trả sách]
 
 **YÊU CẦU:**
@@ -251,7 +251,7 @@ const pagination = false;
                     <NGrid cols="3" class="shadow-lg rounded-md min-w-md bg-slate-300/50 backdrop-blur-md border border-gray-300 p-4">
                             <NGi span="1">
                                 <NSpace justify="center" class="h-full" vertical="true" align="center">
-                                    <NImage width="100" src="/users/default-avatar.svg"></NImage>
+                                    <img class="w-26 h-26 overflow-hidden rounded-full object-cover" :src="`${API_BASE}${userInfo?.AVATAR}`" alt="">
                                 </NSpace>
                             </NGi>
                             <NGi span="2">
