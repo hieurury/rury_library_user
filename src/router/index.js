@@ -20,7 +20,7 @@ import AILibrarian               from "../views/AILibrarian.vue";
 import BookDetail               from "../views/BookDetail.vue";
 import BooksView                from "../views/BooksView.vue";
 import BorrowConfirmView        from "../views/BorrowConfirmView.vue";
-import VNPayReturnView          from "../views/VNPayReturnView.vue";
+import OnlineCashReturnView     from "../views/OnlineCashReturnView.vue";
 
 //auth
 import {
@@ -136,14 +136,14 @@ const router = [
         ]
     },
     {
-        path: '/vnpay',
-        name: 'VNPay',
+        path: '/payment',
+        name: 'Payment',
         component: NoneLayout,
         children: [
             {
                 path: 'return',
-                name: 'VNPayReturn',
-                component: VNPayReturnView
+                name: 'OnlineCashReturn',
+                component: OnlineCashReturnView
             }
         ]
     }

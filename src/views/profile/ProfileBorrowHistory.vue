@@ -91,7 +91,16 @@ const handleCancelBill = async () => {
     
     try {
         const response = await cancelBill(selectedBill.value.MABILL);
-        message.success(response.message || 'Hủy đơn mượn sách thành công');
+        
+        // Kiểm tra xem có hoàn tiền không
+        if (response.data?.refundAmount > 0) {
+            message.success(
+                `Hủy đơn thành công. Số tiền ${formatPrice(response.data.refundAmount)} sẽ được hoàn trả trong 3-5 ngày làm việc.`,
+                { duration: 5000 }
+            );
+        } else {
+            message.success(response.message || 'Hủy đơn mượn sách thành công');
+        }
         
         // Reload bills và đóng drawer
         const userData = getAccountData();
@@ -193,7 +202,7 @@ const columns = [
                 },
                 {
                     default: () => {
-                        return row.LOAITHANHTOAN === 'online' ? 'VNPAY' : 'Tiền mặt';
+                        return row.LOAITHANHTOAN === 'cash' ? 'Tiền mặt' : 'online';
                     }
                 }
             );

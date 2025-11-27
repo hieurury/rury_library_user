@@ -21,7 +21,7 @@ import { useRouter } from 'vue-router';
 import { getSelectedBagItems, clearBag, clearSelectedBagItems, removeFromBag } from '../hooks/useBag';
 import { getAccountData } from '../hooks/useAccount';
 import { getBookById } from '../services/apiBook';
-import { checkBill, createBill } from '../services/apiBill';
+import { checkBill, checkBillPayPal, createBill } from '../services/apiBill';
 import { getUserInfo, getBorrowingCount } from '../services/apiUser';
 import { clearBookIds, getBookIds, setBookIds } from '../hooks/usePayment'
 import FavoriteButton from '../components/FavoriteButton.vue';
@@ -36,7 +36,7 @@ const submitting = ref(false);
 const booksDetail = ref([]); // Chỉ chứa sách được chọn từ BagDrawer
 const userInfo = ref(null);
 const currentBorrowingCount = ref(0);
-const paymentMethod = ref('online'); // 'online' (VNPAY) hoặc 'cash' (Tiền mặt)
+const paymentMethod = ref('paypal'); // 'online' (VNPAY), 'paypal' (PayPal), hoặc 'cash' (Tiền mặt)
 const billData = ref(null);
 const showSuccessModal = ref(false);
 
@@ -157,6 +157,42 @@ const handleVNPSubmit = async () => {
             return;
         }
         
+        
+        window.location.href = paymentUrl;
+    } catch (error) {
+        const errorMsg = error.response?.data?.message || 'Không thể tạo phiếu mượn';
+        message.error(errorMsg);
+        submitting.value = false;
+    }
+};
+
+const handlePayPalSubmit = async () => {
+    if (booksDetail.value.length === 0) {
+        message.warning('Không có sách để mượn');
+        return;
+    }
+    
+    if (!canProceed.value) {
+        message.error(`Bạn chỉ còn có thể mượn thêm ${remainingSlots.value} cuốn sách`);
+        return;
+    }
+    
+    submitting.value = true;
+    try {
+        const LIST_MA_BANSAO = booksDetail.value.map(book => book.copyId);
+        
+        const response = await checkBillPayPal(
+            userData.value.MADOCGIA,
+            LIST_MA_BANSAO
+        );
+        billData.value = response;
+        const paymentUrl = response?.paymentUrl;
+
+        if (!paymentUrl) {
+            message.error('Có lỗi xảy ra trong quá trình xử lý thanh toán PayPal');
+            submitting.value = false;
+            return;
+        }
         
         window.location.href = paymentUrl;
     } catch (error) {
@@ -364,15 +400,28 @@ const goToHome = () => {
                                     <NSpace vertical :size="12">
                                         <NRadioGroup v-model:value="paymentMethod" size="large" class="w-full">
                                             <NSpace vertical :size="12" class="w-full">
-                                                <NRadioButton value="online" class="w-full">
+                                                <!-- <NRadioButton value="vnpay" class="w-full">
                                                     <NSpace align="center">
                                                         <NIcon size="20" color="#0088cc">
                                                             <i class="fa-solid fa-credit-card"></i>
                                                         </NIcon>
                                                         <div class="w-full">
-                                                            <div class="font-semibold">Chuyển khoản VNPAY</div>
+                                                            <div class="font-semibold">VNPAY</div>
                                                             <NText depth="3" class="text-xs">
-                                                                Thanh toán trực tuyến an toàn
+                                                                Thanh toán qua thẻ nội địa
+                                                            </NText>
+                                                        </div>
+                                                    </NSpace>
+                                                </NRadioButton> -->
+                                                <NRadioButton value="paypal" class="w-full">
+                                                    <NSpace align="center">
+                                                        <NIcon size="20" color="#0070ba">
+                                                            <i class="fa-brands fa-paypal"></i>
+                                                        </NIcon>
+                                                        <div class="w-full">
+                                                            <div class="font-semibold">PayPal</div>
+                                                            <NText depth="3" class="text-xs">
+                                                                Thanh toán quốc tế an toàn
                                                             </NText>
                                                         </div>
                                                     </NSpace>
@@ -428,6 +477,20 @@ const goToHome = () => {
                                                 <NIcon><i class="fa-solid fa-credit-card"></i></NIcon>
                                             </template>
                                             Thanh toán VNPAY
+                                        </NButton>
+                                        <NButton
+                                            v-else-if="paymentMethod === 'paypal'"
+                                            type="info"
+                                            size="large"
+                                            block
+                                            :loading="submitting"
+                                            :disabled="!canProceed"
+                                            @click="handlePayPalSubmit"
+                                        >
+                                            <template #icon>
+                                                <NIcon><i class="fa-brands fa-paypal"></i></NIcon>
+                                            </template>
+                                            Thanh toán PayPal
                                         </NButton>
                                         <NButton
                                             v-else

@@ -22,13 +22,32 @@ const checkBill = async (MADOCGIA, LIST_MA_BANSAO, LOAITHANHTOAN) => {
     }
 };
 
-const createBill = async (MADOCGIA, LIST_MA_BANSAO, LOAITHANHTOAN) => {
+const checkBillPayPal = async (MADOCGIA, LIST_MA_BANSAO) => {
+    try {
+        const url = `${API_BASE}/bill/checkBillPayPal`;
+        const response = await axios.post(url, 
+            { MADOCGIA, LIST_MA_BANSAO },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const createBill = async (MADOCGIA, LIST_MA_BANSAO, LOAITHANHTOAN, paymentDetails = {}) => {
     try {
         const url = `${API_BASE}/bill/create`;
         const response = await axios.post(url, {
             MADOCGIA,
             LIST_MA_BANSAO,
             LOAITHANHTOAN,
+            ...paymentDetails // PayPal token, VNPay transaction ID, etc.
         }, {
             headers: {
                 'Content-Type': 'application/json',
@@ -109,6 +128,7 @@ const cancelBill = async (MABILL) => {
 
 export {
     checkBill,
+    checkBillPayPal,
     getBillById,
     getBillsByDocGia,
     confirmCashPayment,

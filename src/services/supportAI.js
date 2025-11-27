@@ -64,7 +64,7 @@ const RESPONSE_RULES = {
 const PERFECT_RESPONSE = {
     rules: "Nếu người dùng yêu cầu về một loại sách cụ thể và loại sách đó có tồn tại trong dữ liệu thư viện hãy đưa ra một đường dẫn và dẫn họ đến đúng vị trí quyền sách đó với các dữ liệu được cấp cấp dưới đây",
     routes: {
-        get_book: `${DOMAIN}/books/{MASACH}`,
+        get_book: `${DOMAIN}/book/{MASACH}`,
         get_category: `${DOMAIN}/categories/{MaLoai}`,
     }
 }
