@@ -21,6 +21,9 @@ import {
     NBadge,
     NSkeleton
 }                       from 'naive-ui';
+
+// Define component name for KeepAlive
+defineOptions({ name: 'HomeView' });
 import { ref, onMounted, h } from 'vue';
 import { useRouter } from 'vue-router';
 import Search           from '../components/Search.vue';
@@ -233,6 +236,7 @@ const getFeaturedCategories = () => {
               <NCard 
                 class="relative overflow-hidden transition-all duration-300 hover:shadow-2xl cursor-pointer h-full"
                 :style="{ borderTop: `4px solid ${category.Color || '#18a058'}` }"
+                @click="router.push(`/categories/${category.MaLoai}`)"
               >
                 <!-- Badge số thứ hạng -->
                 <div 
@@ -270,7 +274,8 @@ const getFeaturedCategories = () => {
                   <NEllipsis 
                     v-if="category.MoTa" 
                     :line-clamp="2" 
-                    class="text-gray-500 dark:text-gray-400 text-center text-sm px-4"
+                    :tooltip="{ width: 300 }"
+                    class="text-gray-500 dark:text-gray-400 text-center text-sm px-4 max-w-full"
                   >
                     {{ category.MoTa }}
                   </NEllipsis>
@@ -346,10 +351,10 @@ const getFeaturedCategories = () => {
                       </NGi>
                       <NGi span="2">
                         <NSpace vertical class="p-4">
-                          <NEllipsis :line-clamp="1">
+                          <NEllipsis :line-clamp="1" :tooltip="{ width: 300 }">
                             <h3 class="text-lg uppercase font-semibold mb-2">{{ book.TENSACH }}</h3>
                           </NEllipsis>
-                          <NEllipsis :line-clamp="2">
+                          <NEllipsis :line-clamp="2" :tooltip="{ width: 350 }">
                             <p class="text-gray-600 dark:text-gray-300 text-sm mb-2">{{ book.MOTA }}</p>
                           </NEllipsis>
                           <NSpace>
@@ -454,7 +459,7 @@ const getFeaturedCategories = () => {
                   <NButton 
                     text 
                     type="primary"
-                    @click="router.push(`/category/${category.MaLoai}`)"
+                    @click="router.push(`/categories/${category.MaLoai}`)"
                   >
                     Xem tất cả
                     <template #icon>
@@ -492,7 +497,7 @@ const getFeaturedCategories = () => {
                           <NSpace vertical justify="space-between" class="h-full">
                             <NSpace vertical>
                               <!-- Title -->
-                              <NEllipsis :line-clamp="2" class="mb-1">
+                              <NEllipsis :line-clamp="2" :tooltip="{ width: 300 }" class="mb-1">
                                 <h3 class="text-sm font-semibold">{{ book.TENSACH }}</h3>
                               </NEllipsis>
                               
@@ -503,7 +508,7 @@ const getFeaturedCategories = () => {
                               </NText>
                               
                               <!-- Description -->
-                              <NEllipsis :line-clamp="2" class="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                              <NEllipsis :line-clamp="2" :tooltip="{ width: 350 }" class="text-xs text-gray-600 dark:text-gray-400 mb-2">
                                 {{ book.MOTA }}
                               </NEllipsis>
                             </NSpace>
@@ -617,4 +622,17 @@ const getFeaturedCategories = () => {
   margin-bottom: 0;
 }
 
+/* Fix NEllipsis overflow */
+:deep(.n-ellipsis) {
+  max-width: 100%;
+  min-width: 0;
+}
+
+:deep(.n-grid) {
+  min-width: 0;
+}
+
+:deep(.n-gi) {
+  min-width: 0;
+}
 </style>

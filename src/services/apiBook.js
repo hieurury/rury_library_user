@@ -46,9 +46,20 @@ const getAvailableCopies = async (bookId) => {
     }
 };
 
+const searchBooks = async (query) => {
+    try {
+        const url = `${API_BASE}/sach/search?q=${encodeURIComponent(query)}`;
+        const response = await axios.get(url);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
 export {
     getAllBooks,
     getBookById,
     getTopBooks,
-    getAvailableCopies
+    getAvailableCopies,
+    searchBooks
 };

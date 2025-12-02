@@ -1,12 +1,17 @@
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { NButton, NIcon } from 'naive-ui';
 
+const router = useRouter();
 const searchQuery = ref('');
 
 const handleSearch = () => {
   if (searchQuery.value.trim()) {
-    // TODO: Implement search logic here
+    router.push({ 
+      name: 'Search', 
+      query: { q: searchQuery.value.trim() } 
+    });
   }
 };
 

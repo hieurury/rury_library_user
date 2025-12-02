@@ -1,8 +1,7 @@
 <script setup>
 import { onMounted } from 'vue';
-import { NConfigProvider, NMessageProvider } from 'naive-ui';
+import { NConfigProvider, NMessageProvider, darkTheme } from 'naive-ui';
 import { isDark } from './hooks/useDark';
-import { darkTheme } from 'naive-ui';
 </script>
 
 

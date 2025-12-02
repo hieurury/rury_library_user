@@ -352,7 +352,7 @@ const renderTINHTRANG = (status) => {
                             </NDescriptionsItem>
                             <NDescriptionsItem label="Phương thức">
                                 <NTag type="info">
-                                    {{ selectedBill.LOAITHANHTOAN === 'online' ? 'VNPAY' : 'Tiền mặt' }}
+                                    {{ selectedBill.LOAITHANHTOAN === 'cash' ? 'Tiền mặt' : 'online' }}
                                 </NTag>
                             </NDescriptionsItem>
                             <NDescriptionsItem label="Trạng thái">

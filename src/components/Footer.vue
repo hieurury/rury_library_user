@@ -106,7 +106,7 @@ const router = useRouter();
                         <h3 class="text-white font-semibold text-lg mb-2">Liên hệ</h3>
                         <div class="text-sm">
                             <NIcon class="mr-2"><i class="fa-solid fa-map-marker-alt"></i></NIcon>
-                            123 Đường Sách, Quận 1, TP.HCM
+                            Ninh Kiều, Cần Thơ, Việt Nam
                         </div>
                         <div class="text-sm">
                             <NIcon class="mr-2"><i class="fa-solid fa-phone"></i></NIcon>
@@ -114,7 +114,7 @@ const router = useRouter();
                         </div>
                         <div class="text-sm">
                             <NIcon class="mr-2"><i class="fa-solid fa-envelope"></i></NIcon>
-                            contact@rurylib.com
+                            hieurury007@gmail.com
                         </div>
                         <div class="text-sm">
                             <NIcon class="mr-2"><i class="fa-solid fa-clock"></i></NIcon>
@@ -127,8 +127,8 @@ const router = useRouter();
             <NDivider class="my-8 border-gray-700" />
 
             <div class="text-center text-sm text-gray-500">
-                <p>© 2024 RuryLib. All rights reserved.</p>
-                <p class="mt-2">Made with <NIcon color="red"><i class="fa-solid fa-heart"></i></NIcon> by RuryLib Team</p>
+                <p>{{ new Date().getFullYear() }} © RuryLib. Quyền được bảo lưu</p>
+                <p class="mt-2">Thực hiện bằng bởi hieurury</p>
             </div>
         </div>
     </footer>

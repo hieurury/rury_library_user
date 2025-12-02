@@ -24,7 +24,18 @@ const getTopCategories = async () => {
     }
 };
 
+const getBooksByCategory = async (maLoai) => {
+    try {
+        const response = await axios.get(`${API_BASE}/the-loai/${maLoai}/books`);
+        return response.data;
+    } catch (error) {
+        console.error('API Error (getBooksByCategory):', error);
+        throw error;
+    }
+};
+
 export {
     getCategories,
-    getTopCategories
+    getTopCategories,
+    getBooksByCategory
 }

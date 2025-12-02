@@ -88,9 +88,7 @@ const handleDropdownSelect = (key) => {
             <NLayoutSider 
                 bordered 
                 collapse-mode="transform" 
-                :collapsed-width="120" 
                 :width="280" 
-                show-trigger="arrow-circle"
             >
                 <ProfileSidebar />
             </NLayoutSider>

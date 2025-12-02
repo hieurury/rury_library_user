@@ -103,24 +103,24 @@ const handleDropdownSelect = (key) => {
                 <NSpace class="hidden lg:flex uppercase font-semibold dark:text-gray-300" size="large" align="center">
                     <router-link 
                         to="/" 
-                        class="px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                        :class="{ 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400': isHomeView }"
+                        class="px-4 py-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                        :class="{ 'border-b-2 border-gray-600 dark:border-blue-400 text-blue-600 dark:text-blue-400': isHomeView }"
                     >
                         <NIcon class="mr-1"><i class="fa-solid fa-home"></i></NIcon>
                         Trang chủ
                     </router-link>
                     <router-link 
                         to="/books" 
-                        class="px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                        :class="{ 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400': isBookView }"
+                        class="px-4 py-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                        :class="{ 'border-b-2 border-gray-600 dark:border-blue-400 text-blue-600 dark:text-blue-400': isBookView }"
                     >
                         <NIcon class="mr-1"><i class="fa-solid fa-book"></i></NIcon>
                         Sách
                     </router-link>
                     <router-link 
                         to="/chat/ai" 
-                        class="px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                        :class="{ 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400': isChatAIView }"
+                        class="px-4 py-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                        :class="{ 'border-b-2 border-gray-600 dark:border-blue-400 text-blue-600 dark:text-blue-400': isChatAIView }"
                     >
                         <NIcon class="mr-1"><i class="fa-solid fa-robot"></i></NIcon>
                         Thủ thư AI
@@ -185,7 +185,11 @@ const handleDropdownSelect = (key) => {
     </header>
     
     <main class="min-h-screen">
-        <router-view />
+        <router-view v-slot="{ Component }">
+            <KeepAlive :include="['HomeView', 'BooksView', 'SearchResultsView']">
+                <component :is="Component" />
+            </KeepAlive>
+        </router-view>
     </main>
 
     <Footer />

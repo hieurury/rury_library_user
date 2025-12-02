@@ -110,7 +110,7 @@ const themeOverrides = {
 }
 //==========> Liên quan đến Steps
 
-const currentRef = ref(2);
+const currentRef = ref(1);
 const currentStatus = computed(() => {
     switch (currentRef.value) {
         case 1:

@@ -19,8 +19,10 @@ import ProfileBorrowHistory     from "../views/profile/ProfileBorrowHistory.vue"
 import AILibrarian               from "../views/AILibrarian.vue";
 import BookDetail               from "../views/BookDetail.vue";
 import BooksView                from "../views/BooksView.vue";
+import SearchResultsView        from "../views/SearchResultsView.vue";
 import BorrowConfirmView        from "../views/BorrowConfirmView.vue";
 import OnlineCashReturnView     from "../views/OnlineCashReturnView.vue";
+import CategoryView             from "../views/CategoryView.vue";
 
 //auth
 import {
@@ -45,6 +47,16 @@ const router = [
                 path: 'books',
                 name: 'Books',
                 component: BooksView
+            },
+            {
+                path: 'categories/:maLoai',
+                name: 'Category',
+                component: CategoryView
+            },
+            {
+                path: 'search',
+                name: 'Search',
+                component: SearchResultsView
             }
         ]
     },
@@ -156,8 +168,10 @@ const routes = createRouter({
 })
 
 routes.beforeEach((to, from, next) => {
-    const publicPages = ['/', '/auth/login', '/auth/register', '/books'];
-    const authRequired = !publicPages.includes(to.path);
+    const publicPages = ['/', '/auth/login', '/auth/register', '/books', '/search'];
+    const publicPrefixes = ['/categories/', '/book/'];
+    const isPublicPage = publicPages.includes(to.path) || publicPrefixes.some(prefix => to.path.startsWith(prefix));
+    const authRequired = !isPublicPage;
     const loggedIn = getAccountData() !== null;
 
     if (authRequired && !loggedIn) {

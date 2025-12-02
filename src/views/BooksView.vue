@@ -23,6 +23,9 @@ import {
   NLayoutSider,
   NLayoutContent
 } from 'naive-ui';
+
+// Define component name for KeepAlive
+defineOptions({ name: 'BooksView' });
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { getAllBooks, getTopBooks } from '../services/apiBook.js';
@@ -341,7 +344,7 @@ watch([searchQuery, selectedCategory, selectedYearRange, priceRange, borrowRange
           <!-- Books -->
           <NGi v-else v-for="book in paginatedBooks" :key="book.MASACH" span="1">
                 <NThing 
-                  class="shadow-md rounded-lg hover:shadow-xl dark:border dark:border-gray-700 transition-shadow duration-200 cursor-pointer"
+                  class="shadow-md rounded-lg hover:shadow-xl dark:border dark:border-gray-700 h-full transition-shadow duration-200 cursor-pointer"
                   @click="router.push(`/book/${book.MASACH}`)"
                 >
                   <template #description>
@@ -365,29 +368,35 @@ watch([searchQuery, selectedCategory, selectedYearRange, priceRange, borrowRange
                       </NGi>
 
                       <!-- Info -->
-                      <NGi span="3">
-                        <NSpace vertical justify="space-between" class="p-2 h-full">
-                          <NSpace vertical>
+                      <NGi span="3" class="overflow-hidden">
+                        <NSpace vertical justify="space-between" class="p-2 h-full w-full">
+                          <NSpace vertical class="w-full overflow-hidden">
                               <!-- Title -->
-                            <NEllipsis :line-clamp="1" class="max-w-full">
-                              <h3 class="text-lg font-semibold">{{ book.TENSACH }}</h3>
+                            <NEllipsis :line-clamp="1" :tooltip="{ width: 300, contentStyle: 'color: #fff' }">
+                              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ book.TENSACH }}</h3>
                             </NEllipsis>
                               <!-- Author -->
-                              <NEllipsis :line-clamp="1" class="text-sm text-gray-500 dark:text-gray-400 max-w-full">
+                              <NEllipsis :line-clamp="1" :tooltip="{ width: 300, contentStyle: 'color: #fff' }">
+                                <span class="text-sm text-gray-600 dark:text-gray-300">
                                   Tác giả: {{ book.TACGIA }} - Nhà xuất bản: {{ book.MAXB.TENNXB }}
+                                </span>
                             </NEllipsis>
                             <!-- Description -->
-                            <NEllipsis :line-clamp="2" class="text-sm text-gray-600 dark:text-gray-400 max-w-full">
-                              {{ book.MOTA }}
+                            <NEllipsis :line-clamp="2" :tooltip="{ width: 350, contentStyle: 'color: #fff' }">
+                              <span class="text-sm text-gray-700 dark:text-gray-200">
+                                {{ book.MOTA }}
+                              </span>
                             </NEllipsis>
 
                             <!-- Categories -->
-                            <NSpace>
+                            <NSpace @click.stop>
                               <NTag
                                 v-for="category in book.THELOAI?.slice(0, 2)"
                                 :key="category.MaLoai"
                                 :color="{ color: category.Color }"
                                 size="small"
+                                class="cursor-pointer hover:opacity-80"
+                                @click="router.push(`/categories/${category.MaLoai}`)"
                               >
                                 {{ category.TenLoai }}
                               </NTag>
@@ -443,5 +452,21 @@ watch([searchQuery, selectedCategory, selectedYearRange, priceRange, borrowRange
 </template>
 
 <style scoped>
-/* Custom styles if needed */
+/* Fix NEllipsis overflow */
+:deep(.n-ellipsis) {
+  max-width: 100%;
+  min-width: 0;
+}
+
+:deep(.n-grid) {
+  min-width: 0;
+}
+
+:deep(.n-gi) {
+  min-width: 0;
+}
+</style>
+
+<!-- Global styles for tooltip -->
+<style>
 </style>
