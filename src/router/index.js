@@ -11,6 +11,7 @@ import ProfileLayout            from "../layouts/ProfileLayout.vue";
 import HomeView                 from '../views/HomeView.vue'
 import LoginView                from '../views/LoginView.vue'
 import RegisterView             from '../views/RegisterView.vue'
+import ForgotPasswordView       from '../views/ForgotPasswordView.vue'
 import ProfileView              from "../views/ProfileView.vue";
 import ProfileOverview          from "../views/profile/ProfileOverview.vue";
 import ProfileFavorites         from "../views/profile/ProfileFavorites.vue";
@@ -74,6 +75,11 @@ const router = [
                 path: 'register',
                 name: 'Register',
                 component: RegisterView
+            },
+            {
+                path: 'forgot-password',
+                name: 'ForgotPassword',
+                component: ForgotPasswordView
             }
         ]
     },
@@ -168,7 +174,7 @@ const routes = createRouter({
 })
 
 routes.beforeEach((to, from, next) => {
-    const publicPages = ['/', '/auth/login', '/auth/register', '/books', '/search'];
+    const publicPages = ['/', '/auth/login', '/auth/register', '/auth/forgot-password', '/books', '/search'];
     const publicPrefixes = ['/categories/', '/book/'];
     const isPublicPage = publicPages.includes(to.path) || publicPrefixes.some(prefix => to.path.startsWith(prefix));
     const authRequired = !isPublicPage;

@@ -219,6 +219,39 @@ const uploadAvatar = async (MADOCGIA, file) => {
     }
 };
 
+// Forgot password - gửi OTP
+const forgotPassword = async (email) => {
+    try {
+        const url = `${API_BASE}/user/forgot-password`;
+        const response = await axios.post(url, { EMAIL: email });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Verify OTP
+const verifyOTP = async (email, otp) => {
+    try {
+        const url = `${API_BASE}/user/verify-otp`;
+        const response = await axios.post(url, { EMAIL: email, OTP: otp });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// Reset password
+const resetPassword = async (resetToken, newPassword) => {
+    try {
+        const url = `${API_BASE}/user/reset-password`;
+        const response = await axios.post(url, { resetToken, newPassword });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
 export { 
     registerAccount, 
     loginccount, 
@@ -232,5 +265,8 @@ export {
     markAllNotificationsAsRead,
     deleteAllNotifications,
     updateUser,
-    uploadAvatar
+    uploadAvatar,
+    forgotPassword,
+    verifyOTP,
+    resetPassword
 };

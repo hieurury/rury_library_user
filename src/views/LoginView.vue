@@ -154,7 +154,14 @@ const themeDark                 =       {
                                     <NFormItem label="Mật khẩu" path="password">
                                         <NInput class="min-w-xs" type="password" v-model:value="formData.password" placeholder="Nhập mật khẩu" show-password-on="mousedown"/>
                                     </NFormItem>
-                                    <NButton @click="submitForm" class="min-w-xs" color="rgb(136, 8, 136)">Đăng nhập</NButton>
+                                    <NSpace vertical class="w-full">
+                                        <NButton @click="submitForm" class="w-full" color="rgb(136, 8, 136)">Đăng nhập</NButton>
+                                        <NSpace justify="end" align="center">
+                                            <router-link to="/auth/forgot-password" class="text-sm text-slate-300 hover:text-white transition-colors">
+                                                <i class="fa-solid fa-key mr-1"></i>Quên mật khẩu?
+                                            </router-link>
+                                        </NSpace>
+                                    </NSpace>
                                 </NForm>
                                 <NIcon>
                                     <i class="fa-solid fa-forward-arrow"></i>

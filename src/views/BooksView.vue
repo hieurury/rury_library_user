@@ -269,17 +269,6 @@ watch([searchQuery, selectedCategory, selectedYearRange, priceRange, borrowRange
             />
           </div>
 
-          <!-- Year Range Filter -->
-          <div>
-            <NText class="block mb-2 font-semibold">Năm xuất bản</NText>
-            <NSelect
-              v-model:value="selectedYearRange"
-              :options="yearOptions"
-              placeholder="Chọn năm xuất bản"
-              clearable
-            />
-          </div>
-
           <!-- Price Range -->
           <div>
             <NText class="block mb-2 font-semibold">

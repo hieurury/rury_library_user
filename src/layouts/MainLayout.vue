@@ -89,14 +89,14 @@ const handleDropdownSelect = (key) => {
                     <NAvatar
                         round
                         size="large"
-                        src="/logo.png"
+                        src="/logo-nobg.png"
                     />
-                    <NGradientText 
+                    <h3 
                         type="warning"
                         class="text-2xl lg:text-3xl font-bold"
                     >
                         RuryLib
-                    </NGradientText>
+                    </h3>
                 </RouterLink>
 
                 <!-- Navigation Links - Desktop -->
