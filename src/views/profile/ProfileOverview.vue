@@ -128,7 +128,8 @@ onMounted(async () => {
 
 |Tên sách| Số ngày còn lại|
 |---|---|
-> Thêm lưu ý cho các sách còn dưới 3 ngày hoặc đã quá hạn.`,
+> Thêm lưu ý cho các sách còn dưới 3 ngày hoặc đã quá hạn.
+> Nếu không có sách nào đang mượn, hãy trả về "Hiện tại không có sách nào đang mượn. Khám phá thư viện sách với đường dẫn đến trang /books."`,
             borrow_data: true,
             short_response: true
         });

@@ -104,11 +104,15 @@ const handleClose = () => {
 };
 
 const getConditionColor = (condition) => {
-    return condition === 'new' ? 'success' : 'warning';
+    if (condition === 'new') return 'success';
+    if (condition === 'lost') return 'error';
+    return 'warning'; // old
 };
 
 const getConditionText = (condition) => {
-    return condition === 'new' ? 'Mới' : 'Cũ';
+    if (condition === 'new') return 'Mới';
+    if (condition === 'lost') return 'Mất';
+    return 'Cũ'; // old
 };
 </script>
 
