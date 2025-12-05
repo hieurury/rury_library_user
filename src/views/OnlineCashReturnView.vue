@@ -76,10 +76,15 @@ const processVNPayResponse = (responseCode) => {
         content: 'Có lỗi xảy ra. Vui lòng liên hệ hỗ trợ.'
     };
     
-    message[result.status](result.message);
+    // Chỉ set giá trị, không hiển thị message ngay (sẽ hiển thị sau khi load xong)
     resultMessage.value = result.message;
     resultContent.value = result.content;
     resultStatus.value = result.status;
+    
+    // Nếu lỗi thì hiển thị message ngay vì không cần chờ tạo bill
+    if (result.status === 'error') {
+        message.error(result.message);
+    }
 };
 
 // Process PayPal response
@@ -94,10 +99,10 @@ const processPayPalResponse = () => {
         resultContent.value = 'Vui lòng thử lại hoặc liên hệ hỗ trợ.';
         message.error(resultMessage.value);
     } else {
+        // Chỉ set giá trị, không hiển thị message ngay (sẽ hiển thị sau khi load xong)
         resultStatus.value = 'success';
         resultMessage.value = 'Giao dịch thành công';
         resultContent.value = 'RuryLib cảm ơn quý khách đã mượn sách tại thư viện.';
-        message.success(resultMessage.value);
     }
 };
 
@@ -135,16 +140,21 @@ const createBillAfterPayment = async () => {
             LIST_MA_BANSAO.forEach(copyId => {
                 removeFromBag(copyId);
             });
+            
+            // Hiển thị message thành công sau khi tạo bill xong
+            message.success('Giao dịch thành công');
         } else {
             resultStatus.value = 'error';
             resultMessage.value = 'Lỗi tạo phiếu mượn';
             resultContent.value = 'Thanh toán thành công nhưng không thể tạo phiếu mượn. Vui lòng liên hệ hỗ trợ.';
+            message.error(resultMessage.value);
         }
     } catch (error) {
         loading.value = false;
         resultStatus.value = 'error';
         resultMessage.value = 'Lỗi hệ thống';
         resultContent.value = error.response?.data?.message || 'Có lỗi xảy ra. Vui lòng liên hệ hỗ trợ.';
+        message.error(resultMessage.value);
     }
 };
 
