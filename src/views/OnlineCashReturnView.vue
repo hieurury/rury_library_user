@@ -195,59 +195,71 @@ onMounted(async () => {
 
 <template>
     <NSpace justify="center" align="center" direction="vertical" class="w-full h-screen">
+        <!-- Loading state -->
         <NCard 
+            v-if="loading"
+            title="Đang xử lý giao dịch"
+            style="width: 600px; max-width: 90%;"
+        >
+            <NSpace vertical size="large" justify="center" align="center" class="py-8">
+                <NSpin size="large" />
+                <NText depth="2">Vui lòng chờ trong giây lát...</NText>
+            </NSpace>
+        </NCard>
+
+        <!-- Result state -->
+        <NCard 
+            v-else
             :title="resultStatus === 'success' ? '✅ Thanh toán thành công' : '❌ Thanh toán thất bại'" 
             style="width: 600px; max-width: 90%;"
         >
-            <NSpin :show="loading">
-                <NResult
-                    :status="resultStatus || 'info'"
-                    :title="resultMessage"
-                >
-                    <template #default>
-                        <NSpace vertical size="large" justify="center" align="center">
-                            <NCard 
-                                v-if="resultStatus === 'success'" 
-                                size="small"
-                                class="w-full"
+            <NResult
+                :status="resultStatus || 'info'"
+                :title="resultMessage"
+            >
+                <template #default>
+                    <NSpace vertical size="large" justify="center" align="center">
+                        <NCard 
+                            v-if="resultStatus === 'success'" 
+                            size="small"
+                            class="w-full"
+                        >
+                            <NText class="block mb-2">
+                                <strong>Lưu ý quan trọng:</strong>
+                            </NText>
+                            <NText depth="3" class="text-sm">
+                                Quý khách vui lòng đến nhận sách trong vòng <strong class="text-orange-500">3 ngày</strong> kể từ ngày thanh toán.
+                            </NText>
+                            <br />
+                            <NText depth="3" class="text-sm">
+                                Nếu vượt quá thời gian, Thư viện sẽ hủy đơn mượn. 
+                                <strong class="text-red-500">Số tiền sẽ không được hoàn trả!</strong>
+                            </NText>
+                        </NCard>
+                        
+                        <NText>{{ resultContent }}</NText>
+                        
+                        <NSpace>
+                            <NButton type="primary" @click="router.push('/')">
+                                <template #icon>
+                                    <NIcon><i class="fa-solid fa-home"></i></NIcon>
+                                </template>
+                                Quay về trang chủ
+                            </NButton>
+                            <NButton 
+                                v-if="resultStatus === 'success'"
+                                secondary 
+                                @click="router.push('/user/profile/history')"
                             >
-                                <NText class="block mb-2">
-                                    <strong>⚠️ Lưu ý quan trọng:</strong>
-                                </NText>
-                                <NText depth="3" class="text-sm">
-                                    Quý khách vui lòng đến nhận sách trong vòng <strong class="text-orange-500">3 ngày</strong> kể từ ngày thanh toán.
-                                </NText>
-                                <br />
-                                <NText depth="3" class="text-sm">
-                                    Nếu vượt quá thời gian, Thư viện sẽ hủy đơn mượn. 
-                                    <strong class="text-red-500">Số tiền sẽ không được hoàn trả!</strong>
-                                </NText>
-                            </NCard>
-                            
-                            <NText>{{ resultContent }}</NText>
-                            
-                            <NSpace>
-                                <NButton type="primary" @click="router.push('/')">
-                                    <template #icon>
-                                        <NIcon><i class="fa-solid fa-home"></i></NIcon>
-                                    </template>
-                                    Quay về trang chủ
-                                </NButton>
-                                <NButton 
-                                    v-if="resultStatus === 'success'"
-                                    secondary 
-                                    @click="router.push('/user/profile/history')"
-                                >
-                                    <template #icon>
-                                        <NIcon><i class="fa-solid fa-history"></i></NIcon>
-                                    </template>
-                                    Xem lịch sử mượn
-                                </NButton>
-                            </NSpace>
+                                <template #icon>
+                                    <NIcon><i class="fa-solid fa-history"></i></NIcon>
+                                </template>
+                                Xem lịch sử mượn
+                            </NButton>
                         </NSpace>
-                    </template>
-                </NResult>
-            </NSpin>
+                    </NSpace>
+                </template>
+            </NResult>
         </NCard>
     </NSpace>
 </template>
