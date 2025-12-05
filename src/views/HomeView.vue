@@ -361,7 +361,10 @@ const getFeaturedCategories = () => {
                             <NTag v-for="category in book.THELOAI" :color="{color: category.Color}" size="small">{{ category.TenLoai }}</NTag>
                           </NSpace>
                           <NSpace justify="space-between" align="center">
-                            <NTag type="warning">{{ formatPrice(book.DONGIA || book.GIABAN || 0) }}/quyển</NTag>
+                            <NTag type="warning">
+                                <i class="fa-solid fa-tag mr-1"></i>
+                              {{ formatPrice(book.DONGIA || book.GIABAN || 0) }}
+                            </NTag>
                           </NSpace>
                         </NSpace>
                       </NGi>
@@ -472,29 +475,29 @@ const getFeaturedCategories = () => {
               </NCard>
 
               <!-- Grid sách 1x4 -->
-              <NGrid cols="4" x-gap="16" y-gap="16">
+              <NGrid cols="3" x-gap="16" y-gap="16">
                 <NGi 
                   v-for="book in getBooksByCategory(category.MaLoai)" 
                   :key="book.MASACH" 
                   span="1"
                 >
-                  <NCard 
+                  <NThing 
                     hoverable 
-                    class="h-full group bg-white dark:bg-gray-800 shadow-md rounded-lg cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all hover:shadow-xl"
+                    class="h-full p-2 group bg-white dark:bg-gray-800 shadow-md rounded-lg cursor-pointer transition-all hover:shadow-xl"
                     @click="router.push(`/book/${book.MASACH}`)"
                   >
                     <NGrid :cols="5" x-gap="8" y-gap="8" class="h-full">
                       <!-- Book Image - 2 cột -->
-                      <NGi span="2" class="relative">
+                      <NGi span="2" class="relative h-full">
                         <div 
                           :style="`background-image: url(${API_BASE}${book.HINHANH});`" 
-                          class="bg-no-repeat bg-center bg-contain min-h-[140px] rounded-md"
+                          class="bg-no-repeat bg-center bg-contain min-h-[140px] rounded-md h-full"
                         ></div>
                       </NGi>
                       
                       <!-- Book Info - 3 cột -->
-                      <NGi span="3">
-                          <NSpace vertical justify="space-between" class="h-full">
+                      <NGi span="3" class="h-full">
+                          <div class="h-full flex flex-col justify-between">
                             <NSpace vertical>
                               <!-- Title -->
                               <NEllipsis :line-clamp="2" :tooltip="{ width: 300 }" class="mb-1">
@@ -515,17 +518,17 @@ const getFeaturedCategories = () => {
                             
                             <!-- Price -->
                             
-                            <NSpace justify="space-between" :size="4">
+                            <NSpace>
                               <NTag type="warning" size="small">
                                 <i class="fa-solid fa-tag mr-1"></i>
                                 {{ formatPrice(book.DONGIA || book.GIABAN || 0) }}
                               </NTag>
-                              <FavoriteButton :book-id="book.MASACH" size="tiny" circle />
+                              <FavoriteButton :book-id="book.MASACH" size="tiny"/>
                             </NSpace>
-                          </NSpace>
+                          </div>
                       </NGi>
                     </NGrid>
-                  </NCard>
+                  </NThing>
                 </NGi>
 
                 <!-- Empty slots nếu ít hơn 4 sách -->

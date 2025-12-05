@@ -183,7 +183,7 @@ const handleBackHome = () => {
                                             <NDescriptionsItem label="Nhà xuất bản">
                                                 <NText>
                                                     <NIcon class="mr-1"><i class="fa-solid fa-building"></i></NIcon>
-                                                    {{ bookData.NHAXUATBAN?.TenNXB || 'Đang cập nhật' }}
+                                                    {{ bookData.MAXB?.TENNXB || 'Đang cập nhật' }}
                                                 </NText>
                                             </NDescriptionsItem>
 
@@ -194,6 +194,7 @@ const handleBackHome = () => {
                                                         :key="category.MaLoai"
                                                         :color="{ color: category.Color }"
                                                         size="medium"
+                                                        style="color: white;"
                                                     >
                                                         {{ category.TenLoai }}
                                                     </NTag>
@@ -203,13 +204,13 @@ const handleBackHome = () => {
                                             <NDescriptionsItem label="Năm xuất bản">
                                                 <NText>
                                                     <NIcon class="mr-1"><i class="fa-solid fa-calendar"></i></NIcon>
-                                                    {{ bookData.NAMXUATBAN || 'Đang cập nhật' }}
+                                                    {{ new Date(bookData.NAMXUATBAN).getFullYear() || 'Đang cập nhật' }}
                                                 </NText>
                                             </NDescriptionsItem>
 
                                             <NDescriptionsItem label="Số quyển">
                                                 <NTag type="info">
-                                                    <NIcon><i class="fa-solid fa-book-copy"></i></NIcon>
+                                                    <NIcon><i class="fa-solid fa-book"></i></NIcon>
                                                     {{ bookData.SOQUYEN || 0 }} quyển
                                                 </NTag>
                                             </NDescriptionsItem>
@@ -230,22 +231,6 @@ const handleBackHome = () => {
                                     <NDescriptions label-placement="left" :column="1" size="small">
                                         <NDescriptionsItem label="Mã sách">
                                             <NTag size="small">{{ bookData.MASACH }}</NTag>
-                                        </NDescriptionsItem>
-                                        
-                                        <NDescriptionsItem label="Ngôn ngữ">
-                                            {{ bookData.NGONNGU || 'Tiếng Việt' }}
-                                        </NDescriptionsItem>
-
-                                        <NDescriptionsItem label="Số trang">
-                                            {{ bookData.SOTRANG || 'Đang cập nhật' }} trang
-                                        </NDescriptionsItem>
-
-                                        <NDescriptionsItem label="Kích thước">
-                                            {{ bookData.KICHTHUOC || 'Đang cập nhật' }}
-                                        </NDescriptionsItem>
-
-                                        <NDescriptionsItem label="Trọng lượng">
-                                            {{ bookData.TRONGLUONG || 'Đang cập nhật' }}
                                         </NDescriptionsItem>
                                     </NDescriptions>
                                 </NCard>

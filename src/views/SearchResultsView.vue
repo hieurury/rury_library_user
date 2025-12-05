@@ -353,13 +353,9 @@ const goToBooks = () => {
 
       <!-- Empty State - Only show after search completed with no results -->
       <NCard v-if="!loading && hasSearched && searchResults.length === 0" class="text-center py-16">
-        <NEmpty description="Không tìm thấy kết quả phù hợp">
-          <template #icon>
-            <NIcon size="64" color="#ccc">
-              <i class="fa-solid fa-search"></i>
-            </NIcon>
-          </template>
-          <template #extra>
+        <NEmpty>
+          <template #default>
+            <p>Không tìm thấy kết quả phù hợp</p>
             <NSpace vertical align="center">
               <p class="text-gray-500 dark:text-gray-400">
                 Thử tìm kiếm với từ khóa khác hoặc duyệt thư viện sách

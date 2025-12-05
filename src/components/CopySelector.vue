@@ -12,7 +12,8 @@ import {
     useMessage,
     NRadioGroup,
     NRadioButton,
-    NText
+    NText,
+    NImage
 } from 'naive-ui';
 import { getAvailableCopies } from '../services/apiBook';
 import { addToBag, isInBag } from '../hooks/useBag';
@@ -81,8 +82,7 @@ const handleConfirm = () => {
     const success = addToBag(props.bookId, selectedCopy.value, copy.TINHTRANG);
     
     if (success) {
-        const conditionText = copy.TINHTRANG === 'new' ? 'Mới' : 'Cũ';
-        message.success(`Đã thêm bản sao (${conditionText}) vào balo`);
+        if(props.mode === 'addOnly') message.success(`Đã thêm vào balo`);
         
         handleClose();
         
@@ -171,9 +171,6 @@ const getConditionText = (condition) => {
                                     />
                                     <div>
                                         <div class="font-mono text-sm">{{ copy.MA_BANSAO }}</div>
-                                        <NText v-if="copy.GHICHU" depth="3" class="text-xs">
-                                            {{ copy.GHICHU }}
-                                        </NText>
                                     </div>
                                 </NSpace>
                             </NSpace>
@@ -206,7 +203,7 @@ const getConditionText = (condition) => {
                     <template #icon>
                         <NIcon><i class="fa-solid fa-check"></i></NIcon>
                     </template>
-                    Thêm vào balo
+                    {{ mode === 'addAndConfirm' ? 'Xác nhận' : 'Thêm vào balo' }}
                 </NButton>
             </NSpace>
         </template>

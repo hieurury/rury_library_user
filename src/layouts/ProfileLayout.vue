@@ -55,7 +55,7 @@ const handleDropdownSelect = (key) => {
                 <NSpace align="center">
                     <RouterLink to="/" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
                         <NAvatar round size="medium" src="/logo-nobg.png" />
-                        <NGradientText type="warning" class="text-xl font-bold">RuryLib</NGradientText>
+                        <h3 type="warning" class="text-xl font-bold">RuryLib</h3>
                     </RouterLink>
                     <span class="text-gray-400">|</span>
                     <h2 class="dark:text-white text-black text-xl uppercase font-semibold">Trang cá nhân</h2>

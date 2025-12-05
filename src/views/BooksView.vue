@@ -371,7 +371,7 @@ watch([searchQuery, selectedCategory, selectedYearRange, priceRange, borrowRange
                                 </span>
                             </NEllipsis>
                             <!-- Description -->
-                            <NEllipsis :line-clamp="2" :tooltip="{ width: 350, contentStyle: 'color: #fff' }">
+                            <NEllipsis style="color: white;" :line-clamp="2" :tooltip="{ width: 350, contentStyle: 'color: #fff' }">
                               <span class="text-sm text-gray-700 dark:text-gray-200">
                                 {{ book.MOTA }}
                               </span>
@@ -398,7 +398,7 @@ watch([searchQuery, selectedCategory, selectedYearRange, priceRange, borrowRange
                               <i class="fa-solid fa-tag mr-1"></i>
                               {{ formatPrice(book.DONGIA) }}
                             </NTag>
-                            <FavoriteButton :book-id="book.MASACH" size="tiny" circle />
+                            <FavoriteButton :book-id="book.MASACH" size="small" />
                           </NSpace>
                         </NSpace>
                       </NGi>

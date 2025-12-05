@@ -23,7 +23,9 @@ import {
 import { marked } from "marked";
 import { ref, nextTick, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { getAccountData } from "../hooks/useAccount.js";
 import AI from '../hooks/useAI.js';
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 const router = useRouter();
 
@@ -32,6 +34,7 @@ const history = ref([]);
 const userRequest = ref('');
 const loading = ref(false);
 const chatHistoryRef = ref(null);
+const accountData = ref(getAccountData());
 
 // AI Configuration toggles
 const enableBooks = ref(true);
@@ -51,6 +54,7 @@ const suggestedQuestions = [
 // Load chat history from session storage on mount
 onMounted(() => {
     history.value = AI.getChatHistory();
+    console.log(accountData.value);
 });
 
 // Save chat history whenever it changes
@@ -129,7 +133,7 @@ const clearHistory = () => {
             <NLayoutHeader bordered class="px-6 py-4 flex-shrink-0">
                 <NSpace justify="space-between" align="center">
                     <NSpace align="center" :size="12">
-                        <NAvatar round src="/AI-logo.png" :size="40" />
+                        <NAvatar round src="/logo-nobg.png" :size="40" />
                         <div>
                             <h1 class="text-xl font-bold">
                                 Thủ Thư Mọt
@@ -162,9 +166,9 @@ const clearHistory = () => {
                         <div class="p-6">
                             <!-- Welcome Message -->
                             <div v-if="history.length === 0" class="flex flex-col items-center justify-center py-16">
-                                <NAvatar round src="/AI-logo.png" :size="80" class="mb-4" />
+                                <img round src="/mot-noname.png" :size="80" class="w-32 h-32 rounded-full shadow mb-4 object-cover" />
                                 <h2 class="text-2xl font-bold mb-2">
-                                    Xin chào, tôi là Mọt 👋
+                                    Xin chào <span class="text-orange-500">{{ accountData?.TEN || '' }}</span>, tôi là Mọt
                                 </h2>
                                 <NText depth="3" class="text-center max-w-md mb-8">
                                     Tôi là trợ lý AI thông minh, sẵn sàng giúp bạn khám phá thế giới sách và thư viện RuryLib
@@ -199,12 +203,12 @@ const clearHistory = () => {
                             <div v-else class="space-y-4">
                                 <div v-for="(chat, index) in history" :key="index" class="chat-turn" :class="{'user-turn': chat.isUser, 'ai-turn': !chat.isUser}">
                                     <NSpace :align="chat.isUser ? 'flex-end' : 'flex-start'" :justify="chat.isUser ? 'flex-end' : 'flex-start'" class="gap-3">
-                                        <NAvatar 
+                                        <img 
                                             v-if="!chat.isUser"
                                             round
-                                            src="/AI-logo.png" 
+                                            src="/mot-noname.png" 
                                             :size="36" 
-                                            class="flex-shrink-0"
+                                            class="flex-shrink-0 w-12 h-12 object-cover rounded-full shadow"
                                         />
                                         <div class="message-bubble" :class="{'user-message': chat.isUser, 'ai-message': !chat.isUser}">
                                             <NSpin v-if="loading && chat.message === '...'" size="small" />
@@ -213,12 +217,12 @@ const clearHistory = () => {
                                             </div>
                                             <div v-else class="markdown-body text-sm" v-html="markdownRender(chat.message)"></div>
                                         </div>
-                                        <NAvatar 
+                                        <img 
                                             v-if="chat.isUser"
                                             round
                                             src="/users/default-avatar.svg" 
                                             :size="36" 
-                                            class="flex-shrink-0"
+                                            class="flex-shrink-0 w-12 h-12 object-cover rounded-full shadow"
                                         />
                                     </NSpace>
                                 </div>

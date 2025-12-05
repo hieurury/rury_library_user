@@ -339,6 +339,7 @@ const goToHome = () => {
                                                             :key="category.MaLoai"
                                                             :color="{ color: category.Color }"
                                                             size="small"
+                                                            style="color: white;"
                                                         >
                                                             {{ category.TenLoai }}
                                                         </NTag>
@@ -529,6 +530,7 @@ const goToHome = () => {
         </div>
 
         <!-- Success Modal -->
+         <!-- bấm ra ngoài cũng sẽ về trang chủ -->
         <NModal
             v-model:show="showSuccessModal"
             preset="dialog"
@@ -537,6 +539,8 @@ const goToHome = () => {
             negative-text="Về trang chủ"
             @positive-click="goToHistory"
             @negative-click="goToHome"
+            @mask-click="goToHome"
+            
         >
             <NSpace vertical :size="16" align="center" class="py-4">
                 <NIcon size="64" color="#52c41a">

@@ -70,7 +70,7 @@ const handleDropdownSelect = (key) => {
   if (key === 'profile') {
     router.push('/user/profile');
   } else if (key === 'borrowed') {
-    router.push('/user/profile');
+    router.push('/user/profile/history');
   } else if (key === 'logout') {
     removeAccountData();
     accountData.value = null;

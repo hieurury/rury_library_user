@@ -202,14 +202,18 @@ const handleConfirm = () => {
                 <NSpin size="large" />
             </div>
 
-            <NEmpty v-else-if="bagItems.length === 0" description="Balo trống">
+            <NEmpty v-else-if="bagItems.length === 0">
                 <template #icon>
-                    <NIcon size="60" color="#d1d5db">
-                        <i class="fa-solid fa-bag-shopping"></i>
+                    <NIcon color="#d1d5db">
+                        <i class="fa-solid fa-boxes-packing"></i>
                     </NIcon>
                 </template>
-                <template #extra>
-                    <NButton type="primary" @click="router.push('/')">
+                <template #default>
+                    <p>Balo của bạn đang trống</p>
+                    <NButton type="primary" @click="() => {
+                        showDrawer = false;
+                        router.push('/books');
+                    }">
                         <template #icon>
                             <NIcon><i class="fa-solid fa-book"></i></NIcon>
                         </template>
@@ -306,6 +310,7 @@ const handleConfirm = () => {
                                     :key="category.MaLoai"
                                     :color="{ color: category.Color }"
                                     size="tiny"
+                                    style="color: white;"
                                 >
                                     {{ category.TenLoai }}
                                 </NTag>
