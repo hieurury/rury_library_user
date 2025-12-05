@@ -126,24 +126,9 @@ onMounted(async () => {
         AI_RESPONSE.value = await AI.generate({
             message: `Phân tích thông tin mượn sách của tôi và trả về theo định dạng sau:
 
-**TỔNG QUAN**
-- Số sách đang mượn: [số lượng]
-- Tình trạng: [OK/Cần chú ý/Cảnh báo]
-
-**SẮP ĐẾN HẠN**
-[Liệt kê dạng bảng: Tên sách | Ngày trả | Còn lại]
-
-**QUÁ HẠN**
-[Liệt kê dạng bảng hoặc thông báo "Không có sách quá hạn"]
-
-**LỜI KHUYÊN**
-[1-2 câu ngắn gọn về việc trả sách]
-
-**YÊU CẦU:**
-- Chỉ trả về thông tin quan trọng
-- Dùng emoji và markdown để dễ nhìn
-- Không thêm lời chào hay giải thích dài dòng
-- Thông tin phải chính xác 100%`,
+|Tên sách| Số ngày còn lại|
+|---|---|
+> Thêm lưu ý cho các sách còn dưới 3 ngày hoặc đã quá hạn.`,
             borrow_data: true,
             short_response: true
         });
@@ -212,23 +197,6 @@ function createColumns({
         }
       }
     },
-    {
-      title: "Chi tiết",
-      key: "actions",
-      width: 80,
-      render(row) {
-        return h(
-          NButton,
-          {
-            strong: true,
-            tertiary: true,
-            size: "small",
-            onClick: () => play(row)
-          },
-          { default: () => "Xem" }
-        );
-      }
-    }
   ];
 }
 
