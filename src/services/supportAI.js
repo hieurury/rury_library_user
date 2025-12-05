@@ -10,7 +10,30 @@ const LIBRARY_DATA = {
     description: `Thư viện tư nhân chuyên hỗ trợ mượn sách với chi phí đi kèm, 
     cung cấp nhiều dịch vụ mượn trả với nhiều ưu đãi thành viên. 
     Thư viện cũng hỗ trợ cho nhưng khách hàng ngồi lại trực tiếp tại chổ đọc sách 1 cách miễn phí hoàn toàn.
-    Cung cấp các cơ sở vật chất hiện đại và có không gian sạch sẻ thoáng mát cho các đọc giả ghé thăm.`
+    Cung cấp các cơ sở vật chất hiện đại và có không gian sạch sẻ thoáng mát cho các đọc giả ghé thăm.`,
+    borrow_and_return: `
+Thủ tục mượn trả rất đơn giản. Đọc giả có thể đăng ký mượn sách trực tuyến tại trang web với các bước như sau:
+1. Chọn sach muốn mượn từ danh mục sách có sẵn hoặc thông qua tìm kiếm.
+2. Thêm sách vào balo và chọn bản sách muốn mượn.
+3. Chọn các sách muốn mượn trong balo và bấm vào nút xác nhận mượn.
+4. chọn phương thức thanh toán và hoàn tất thanh toán.
+5. Đến thư viện để nhận sách đã mượn theo thời gian đã chọn.
+6. Trả sách đúng hạn để tránh phí phạt trễ hạn.
+Đối với khách hàng đến trực tiếp thư viện có thể đến quầy thủ thư để đăng ký mượn. Bạn chỉ cần nói loại sách mong muốn và thủ thư sẽ đăng ký hộ.
+> Lưu ý: Đọc giả cần có thẻ thành viên hoặc đăng ký tài khoản để mượn sách. Vui lòng mang theo giấy tờ tùy thân khi đến nhận sách.
+    `,
+    penalty: `
+Vì thời gian mượn sách rất dài nên phí phạt vi phạm cũng sẽ rất lớn. Đọc giả lưu ý trả sách đúng thời hạn cũng như giữ gìn cẩn thận.
+Đối với phí trả trễ hạn, quý đọc giả sẽ phải nộp phạt là 150% giá tiền mượn và tăng lên mỗi ngày. Ví dụ mượn sách 5.000đ và trễ 1 ngày sẽ đóng 7.500đ trễ 2 ngày sẽ đóng 11.250đ.
+Đối với sách bị mất hoặc hư hỏng nặng, quý đọc giả sẽ phải bồi thường theo giá bằng 20 lần giá mượn sách.
+Mỗi lần đọc giả vi phạm sẽ bị ghi nhận lại và đạt các móc vi phạm sẽ bị phạt như sau:
+- 3 lần: Khóa tài khoản trong 7 ngày.
+- 6 lần: Khóa tài khoản trong 30 ngày.
+- 9 lần: Khóa tài khoản vĩnh viễn.
+> Lưu ý: Mức phạt có thể thay đổi tùy theo quy định của thư viện. Vui lòng liên hệ với nhân viên thư viện để biết thêm chi tiết.`,
+bonus: `
+Giá mượn sách giao động từ 1.000đ đến 10.000đ tuỳ loại sách.
+Thời gian mượn sách sách giao động từ 7 đến 14 ngày tuỳ theo gói dịch vụ của đọc giả. Đọc giả có thể thao khảo thời gian bằng việc truy cập vào trang cá nhân và xem chi tiết gói đang sử dụng để biết thông tin chi tiết.`
 
 }
 

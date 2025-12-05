@@ -24,6 +24,7 @@ import SearchResultsView        from "../views/SearchResultsView.vue";
 import BorrowConfirmView        from "../views/BorrowConfirmView.vue";
 import OnlineCashReturnView     from "../views/OnlineCashReturnView.vue";
 import CategoryView             from "../views/CategoryView.vue";
+import NotFoundView             from "../views/NotFoundView.vue";
 
 //auth
 import {
@@ -164,6 +165,11 @@ const router = [
                 component: OnlineCashReturnView
             }
         ]
+    },
+    {
+        path: '/:pathMatch(.*)*',
+        name: 'NotFound',
+        component: NotFoundView
     }
 ]
 

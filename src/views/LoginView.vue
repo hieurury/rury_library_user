@@ -138,7 +138,7 @@ const themeDark                 =       {
         <NSpace vertical justify="center" align="center" class="min-h-screen">
             <NSpace align="center" class="mb-4 absolute left-4 top-4">
                 <NImage class="rounded-full overflow-hidden shadow-md" width="80" src="/logo-nobg.png" />
-                <h1 class="text-4xl font-bold text-gray-300">RuryLib</h1>
+                <router-link to="/" class="text-4xl font-bold text-gray-300">RuryLib</router-link>
             </NSpace>
 
             <NSpace vertical class="bg-[url('/banner/book-bg2.png')] bg-cover p-8 rounded-md shadow-lg ring-2 ring-slate-100/50">

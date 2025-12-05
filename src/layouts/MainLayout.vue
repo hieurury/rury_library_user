@@ -99,7 +99,7 @@ const handleDropdownSelect = (key) => {
                     </h3>
                 </RouterLink>
 
-                <!-- Navigation Links - Desktop -->
+                <!-- link -->
                 <NSpace class="hidden lg:flex uppercase font-semibold dark:text-gray-300" size="large" align="center">
                     <router-link 
                         to="/" 
@@ -155,13 +155,13 @@ const handleDropdownSelect = (key) => {
 
                     <!-- Auth Buttons if not logged in - Desktop -->
                     <NSpace v-if="!isLoggedIn" class="hidden lg:flex" :size="12">
-                        <NButton type="info" size="large">
+                        <NButton type="info" size="large" style="color: white;">
                             <template #icon>
                                 <NIcon><i class="fa-solid fa-right-to-bracket"></i></NIcon>
                             </template>
                             <RouterLink to="/auth/login">Đăng nhập</RouterLink>
                         </NButton>
-                        <NButton type="primary" size="large">
+                        <NButton color="rgb(136, 8, 136)" size="large" style="color: white;">
                             <template #icon>
                                 <NIcon><i class="fa-solid fa-user-plus"></i></NIcon>
                             </template>
