@@ -63,13 +63,13 @@ const formatPrice = (price) => {
 // Thêm vào balo - chỉ thêm, không chuyển trang
 const handleAddToBag = () => {
     copySelectorMode.value = 'addOnly';
-    showCopySelector.value = true;
+    // showCopySelector.value = true;
 };
 
 // Xác nhận mượn - thêm vào balo và chuyển trang confirm
 const handleBorrowNow = () => {
     copySelectorMode.value = 'addAndConfirm';
-    showCopySelector.value = true;
+    // showCopySelector.value = true;
 };
 
 // Callback khi chỉ thêm vào balo (không chuyển trang)
@@ -142,7 +142,6 @@ const handleBackHome = () => {
                                             type="success" 
                                             size="large"
                                             block
-                                            @click="handleBorrowNow"
                                         >
                                             <template #icon>
                                                 <NIcon><i class="fa-solid fa-check-circle"></i></NIcon>
